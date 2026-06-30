@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Сканер — wmsdent</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<style>
+  :root{
+    --bg:  var(--tg-theme-bg-color, #111);
+    --fg:  var(--tg-theme-text-color, #fff);
+    --hint:var(--tg-theme-hint-color, #8a8a8a);
+    --btn: var(--tg-theme-button-color, #2ea6ff);
+    --btnfg:var(--tg-theme-button-text-color, #fff);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+  #video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+  #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  #frame{width:72vw;max-width:330px;aspect-ratio:1/1;border:3px solid var(--btn);
+    border-radius:18px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+  #panel{position:fixed;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    background:var(--bg);text-align:center}
+  #msg{font-size:15px}
+  #sub{color:var(--hint);font-size:13px;margin-top:4px;word-break:break-all}
+  .row{display:flex;gap:8px;justify-content:center;margin-top:10px}
+  input{flex:1;padding:11px 12px;border-radius:10px;border:1px solid var(--hint);
+    background:transparent;color:var(--fg);font-size:15px}
+  button{border:0;border-radius:10px;padding:11px 16px;font-size:15px;
+    background:var(--btn);color:var(--btnfg)}
+</style>
+</head>
+<body>
+<video id="video" playsinline muted autoplay></video>
+<div id="overlay"><div id="frame"></div></div>
+<div id="panel">
+  <div id="msg">Наведи камеру на код</div>
+  <div id="sub">штрихкод · QR · DataMatrix</div>
+  <div class="row">
+    <input id="manual" placeholder="или введи код вручную" inputmode="text"/>
+    <button id="send">OK</button>
+  </div>
+</div>
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg){ try{ tg.ready(); tg.expand(); }catch(e){} }
+  var msg=document.getElementById('msg'), sub=document.getElementById('sub'),
+      video=document.getElementById('video'), sent=false;
+  function set(t,s){ msg.textContent=t; if(s!==undefined) sub.textContent=s; }
+
+  // GS1 DataMatrix медизделий: (01)GTIN (17)срок YYMMDD (10)LOT (21)серийник
+  function gs1(s){
+    if(!s) return {};
+    var GS='', t=s.replace(/^\][A-Za-z]\d/,''), out={}, i=0,
+        fixed={'01':14,'17':6,'11':6,'15':6};
+    while(i<t.length-1){
+      var ai=t.substr(i,2); i+=2;
+      if(fixed[ai]!==undefined){ out[ai]=t.substr(i,fixed[ai]); i+=fixed[ai]; }
+      else if(ai==='10'||ai==='21'||ai==='240'||ai==='30'){
+        var j=t.indexOf(GS,i); if(j<0)j=t.length;
+        out[ai]=t.substring(i,j); i=(t[j]===GS)?j+1:j;
+      } else break;
+    }
+    var r={};
+    if(out['01']) r.gtin=out['01'];
+    if(out['10']) r.lot=out['10'];
+    if(out['21']) r.serial=out['21'];
+    if(out['17']){ var y=out['17']; r.expiry='20'+y.substr(0,2)+'-'+y.substr(2,2)+'-'+y.substr(4,2); }
+    return r;
+  }
+
+  function send(code, format){
+    if(sent) return; sent=true;
+    var payload=Object.assign({v:1, code:String(code), format:format||'manual'}, gs1(String(code)));
+    try{ if(tg&&tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
+    set('✅ Считано', code);
+    if(tg && typeof tg.sendData==='function'){
+      tg.sendData(JSON.stringify(payload));   // Telegram закроет Mini App и вернёт данные в бота
+    } else {
+      sent=false; set('Код: '+code, 'Открой сканер из кнопки бота, чтобы вернуть результат');
+    }
+  }
+
+  document.getElementById('send').onclick=function(){
+    var v=document.getElementById('manual').value.trim(); if(v) send(v,'manual');
+  };
+
+  if(!window.ZXing){ set('Сканер не загрузился','проверь интернет; можно ввести код вручную'); return; }
+  var hints=new Map();
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[
+    ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX,
+    ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8,
+    ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.ITF
+  ]);
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  var reader=new ZXing.BrowserMultiFormatReader(hints);
+  reader.decodeFromConstraints({ video:{ facingMode:{ ideal:'environment' } } }, video,
+    function(result){
+      if(result && !sent){
+        var fmt=ZXing.BarcodeFormat[result.getBarcodeFormat()]||'unknown';
+        try{ reader.reset(); }catch(e){}
+        send(result.getText(), fmt);
+      }
+    }
+  ).catch(function(){ set('Камера недоступна','разреши доступ к камере или введи код вручную'); });
+})();
+</script>
+</body>
+</html>
