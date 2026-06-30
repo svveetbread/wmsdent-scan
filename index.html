@@ -20,15 +20,19 @@
   #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
   #frame{width:74vw;max-width:340px;aspect-ratio:1/1;border:3px solid var(--btn);
     border-radius:18px;box-shadow:0 0 0 100vmax rgba(0,0,0,.42)}
-  #panel{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  #panel{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
     background:var(--bg)}
   #msg{font-size:15px;text-align:center}
-  #sub{color:var(--hint);font-size:12px;text-align:center;margin-top:3px;word-break:break-all;min-height:14px}
-  .row{display:flex;gap:8px;justify-content:center;margin-top:10px}
+  #sub{color:var(--hint);font-size:12px;text-align:center;margin-top:2px;word-break:break-all;min-height:14px}
+  .row{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:9px}
   input{flex:1;padding:11px 12px;border-radius:10px;border:1px solid var(--hint);
     background:transparent;color:var(--fg);font-size:15px}
-  button{border:0;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:600;
+  button{border:0;border-radius:10px;padding:11px 14px;font-size:15px;font-weight:600;
     background:var(--btn);color:var(--btnfg)}
+  button.ghost{background:transparent;border:1px solid var(--hint);color:var(--fg);font-weight:500}
+  #zoomRow{display:none}
+  #zoom{flex:1}
+  .hide{display:none!important}
 </style>
 </head>
 <body>
@@ -36,8 +40,12 @@
 <div id="overlay"><div id="frame"></div></div>
 <div id="panel">
   <div id="msg">Запуск камеры…</div>
-  <div id="sub">v2 · zxing-wasm</div>
+  <div id="sub">v3 · zxing-wasm</div>
+  <div class="row" id="zoomRow">
+    <span>🔍</span><input type="range" id="zoom" min="1" max="5" step="0.1" value="1"/>
+  </div>
   <div class="row">
+    <button id="torch" class="ghost hide">🔦 Свет</button>
     <button id="shot">📸 Снять кадр</button>
   </div>
   <div class="row">
@@ -57,12 +65,11 @@ const sub=(t)=>{ subEl.textContent=t; };
 const GS=String.fromCharCode(29);
 function gs1(s){
   if(!s) return {};
-  let t=s.replace(/^\][A-Za-z0-9]\d?/,'');           // symbology id (]d2, ]Q3, ]C1…)
+  let t=s.replace(/^\][A-Za-z0-9]\d?/,'');
   const fixed={'01':14,'17':6,'11':6,'15':6,'7003':10};
   const out={}; let i=0;
   while(i<t.length-1){
-    let ai=t.substr(i,2);
-    let len=fixed[ai];
+    let ai=t.substr(i,2), len=fixed[ai];
     if(len!==undefined){ out[ai]=t.substr(i+2,len); i+=2+len; }
     else if(ai==='10'||ai==='21'||ai==='240'||ai==='30'){
       let j=t.indexOf(GS,i+2); if(j<0)j=t.length;
@@ -76,21 +83,19 @@ function gs1(s){
   if(out['17']){ const y=out['17']; r.expiry='20'+y.substr(0,2)+'-'+y.substr(2,2)+'-'+y.substr(4,2); }
   return r;
 }
-
 function send(code, format){
   if(sent) return; sent=true;
-  const payload=Object.assign({v:2, code:String(code), format:format||'manual'}, gs1(String(code)));
+  const payload=Object.assign({v:3, code:String(code), format:format||'manual'}, gs1(String(code)));
   try{ tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
   msg('✅ Считано'); sub(String(code).slice(0,80));
   if(tg && typeof tg.sendData==='function'){ tg.sendData(JSON.stringify(payload)); }
   else { sent=false; msg('Код: '+code); sub('Открой сканер из кнопки бота, чтобы вернуть результат'); }
 }
-
 document.getElementById('send').onclick=()=>{ const v=document.getElementById('manual').value.trim(); if(v) send(v,'manual'); };
 
 // ---- zxing-wasm ----
 let readBarcodes=null;
-const FORMATS=["DataMatrix","QRCode","EAN-13","EAN-8","Code128","Code39","ITF","DataBar","DataBarExpanded","Aztec","PDF417"];
+const FORMATS=["DataMatrix","QRCode","EAN-13","EAN-8","UPC-A","UPC-E","Code128","Code39","ITF","DataBar","DataBarExpanded","Aztec","PDF417"];
 const OPTS={ formats:FORMATS, tryHarder:true, tryRotate:true, tryInvert:true, tryDownscale:true, maxNumberOfSymbols:1 };
 try{
   const mod=await import("https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.0/+esm");
@@ -99,27 +104,29 @@ try{
       ? "https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.0/dist/full/"+p : (prefix+p)
   });
   readBarcodes=mod.readBarcodes;
-}catch(e){ msg('Движок не загрузился'); sub('нет интернета? можно ввести код вручную'); }
+}catch(e){ msg('Движок не загрузился'); sub('нет интернета? введи код вручную'); }
 
 const canvas=document.createElement('canvas');
 const ctx=canvas.getContext('2d',{willReadFrequently:true});
-function grab(){
-  const w=video.videoWidth, h=video.videoHeight;
-  if(!w||!h) return null;
-  canvas.width=w; canvas.height=h; ctx.drawImage(video,0,0,w,h);
-  return ctx.getImageData(0,0,w,h);
+// region: 1 = центральный квадрат на всю высоту, <1 — крупнее (зум в центр); >1 — шире
+function grab(regionFrac){
+  const w=video.videoWidth, h=video.videoHeight; if(!w||!h) return null;
+  const side=Math.floor(Math.min(w,h)*regionFrac);
+  const sx=Math.floor((w-side)/2), sy=Math.floor((h-side)/2);
+  canvas.width=side; canvas.height=side;
+  ctx.drawImage(video, sx,sy,side,side, 0,0,side,side);
+  return ctx.getImageData(0,0,side,side);
 }
-async function decodeOnce(){
+async function decode(regionFrac){
   if(!readBarcodes) return false;
-  const img=grab(); if(!img) return false;
+  const img=grab(regionFrac); if(!img) return false;
   const res=await readBarcodes(img, OPTS);
   if(res && res.length && res[0].text){ send(res[0].text, res[0].format); return true; }
   return false;
 }
-
 document.getElementById('shot').onclick=async()=>{
   if(sent) return; msg('Распознаю кадр…');
-  try{ const ok=await decodeOnce(); if(!ok){ msg('Не разобрал кадр'); sub('подведи ближе, поймай резкость, без бликов'); } }
+  try{ if(!(await decode(1.0))){ msg('Не разобрал кадр'); sub('ближе, поймай резкость, без бликов; включи 🔦'); } }
   catch(e){ msg('Ошибка'); sub(String(e&&e.message||e)); }
 };
 
@@ -128,27 +135,49 @@ async function loop(){
   if(sent) return;
   if(readBarcodes && !busy && video.videoWidth){
     busy=true;
-    try{ if(await decodeOnce()) return; }catch(e){ sub('движок: '+(e&&e.message||e)); }
+    try{ if(await decode(0.85)) return; }catch(e){ sub('движок: '+(e&&e.message||e)); }
     busy=false;
-    ticks++; if(ticks%8===0) sub('сканирую… наведи на код, держи ровно');
+    if((++ticks)%10===0) sub('сканирую… наведи код в рамку');
   }
-  setTimeout(loop, 220);
+  setTimeout(loop, 180);
 }
+
+// ---- камера + аппаратные фишки (фокус/зум/фонарик) ----
+let track=null;
+function applyAdv(obj){ try{ return track && track.applyConstraints({advanced:[obj]}); }catch(e){} }
 
 (async function start(){
   try{
     const stream=await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} },
+      video:{ facingMode:{ideal:'environment'}, width:{ideal:2560}, height:{ideal:1440}, frameRate:{ideal:30} },
       audio:false
     });
     video.srcObject=stream; await video.play();
-    msg('Наведи на код'); sub(readBarcodes?'сканирую…':'движок грузится…');
-    // подождать готовности движка, если ещё грузится
+    track=stream.getVideoTracks()[0];
+    const caps = (track.getCapabilities && track.getCapabilities()) || {};
+
+    // непрерывный автофокус
+    if(caps.focusMode && caps.focusMode.includes('continuous')) applyAdv({focusMode:'continuous'});
+    // фонарик
+    if(caps.torch){
+      const tb=document.getElementById('torch'); tb.classList.remove('hide'); let on=false;
+      tb.onclick=()=>{ on=!on; applyAdv({torch:on}); tb.textContent= on?'🔦 Выкл':'🔦 Свет'; };
+    }
+    // зум
+    if(caps.zoom){
+      const zr=document.getElementById('zoomRow'), z=document.getElementById('zoom');
+      z.min=caps.zoom.min; z.max=caps.zoom.max; z.step=caps.zoom.step||0.1; z.value=track.getSettings().zoom||caps.zoom.min;
+      zr.style.display='flex';
+      z.oninput=()=>applyAdv({zoom:parseFloat(z.value)});
+    }
+    // тап по экрану — точечный фокус
+    video.addEventListener('click', ()=>{ applyAdv({focusMode:'single-shot'}); setTimeout(()=>applyAdv({focusMode:'continuous'}),1500); });
+
+    msg('Наведи код в рамку'); sub(readBarcodes?'сканирую…':'движок грузится…');
     let waited=0; while(!readBarcodes && waited<8000){ await new Promise(r=>setTimeout(r,300)); waited+=300; }
-    if(!readBarcodes){ sub('движок не готов — жми «Снять кадр» или введи вручную'); }
     loop();
   }catch(e){
-    msg('Камера недоступна'); sub('разреши доступ к камере или введи код вручную: '+(e&&e.name||''));
+    msg('Камера недоступна'); sub('разреши доступ к камере или введи код вручную ('+(e&&e.name||'')+')');
   }
 })();
 </script>
