@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="cs">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Сканер — wmsdent</title>
+<title>Skener — wmsdent</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root{
@@ -39,17 +39,17 @@
 <video id="video" playsinline autoplay muted></video>
 <div id="overlay"><div id="frame"></div></div>
 <div id="panel">
-  <div id="msg">Запуск камеры…</div>
+  <div id="msg">Spouštím kameru…</div>
   <div id="sub">v3 · zxing-wasm</div>
   <div class="row" id="zoomRow">
     <span>🔍</span><input type="range" id="zoom" min="1" max="5" step="0.1" value="1"/>
   </div>
   <div class="row">
-    <button id="torch" class="ghost hide">🔦 Свет</button>
-    <button id="shot">📸 Снять кадр</button>
+    <button id="torch" class="ghost hide">🔦 Světlo</button>
+    <button id="shot">📸 Vyfotit</button>
   </div>
   <div class="row">
-    <input id="manual" placeholder="или введи код вручную" inputmode="text"/>
+    <input id="manual" placeholder="nebo zadej kód ručně" inputmode="text"/>
     <button id="send">OK</button>
   </div>
 </div>
@@ -87,9 +87,9 @@ function send(code, format){
   if(sent) return; sent=true;
   const payload=Object.assign({v:3, code:String(code), format:format||'manual'}, gs1(String(code)));
   try{ tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
-  msg('✅ Считано'); sub(String(code).slice(0,80));
+  msg('✅ Načteno'); sub(String(code).slice(0,80));
   if(tg && typeof tg.sendData==='function'){ tg.sendData(JSON.stringify(payload)); }
-  else { sent=false; msg('Код: '+code); sub('Открой сканер из кнопки бота, чтобы вернуть результат'); }
+  else { sent=false; msg('Kód: '+code); sub('Otevři skener z tlačítka bota, aby se výsledek vrátil'); }
 }
 document.getElementById('send').onclick=()=>{ const v=document.getElementById('manual').value.trim(); if(v) send(v,'manual'); };
 
@@ -104,7 +104,7 @@ try{
       ? "https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.0/dist/full/"+p : (prefix+p)
   });
   readBarcodes=mod.readBarcodes;
-}catch(e){ msg('Движок не загрузился'); sub('нет интернета? введи код вручную'); }
+}catch(e){ msg('Modul se nenačetl'); sub('bez internetu? zadej kód ručně'); }
 
 const canvas=document.createElement('canvas');
 const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -125,9 +125,9 @@ async function decode(regionFrac){
   return false;
 }
 document.getElementById('shot').onclick=async()=>{
-  if(sent) return; msg('Распознаю кадр…');
-  try{ if(!(await decode(1.0))){ msg('Не разобрал кадр'); sub('ближе, поймай резкость, без бликов; включи 🔦'); } }
-  catch(e){ msg('Ошибка'); sub(String(e&&e.message||e)); }
+  if(sent) return; msg('Rozpoznávám snímek…');
+  try{ if(!(await decode(1.0))){ msg('Snímek se nepodařilo přečíst'); sub('blíž, zaostři, bez odlesků; zapni 🔦'); } }
+  catch(e){ msg('Chyba'); sub(String(e&&e.message||e)); }
 };
 
 let busy=false, ticks=0;
@@ -135,9 +135,9 @@ async function loop(){
   if(sent) return;
   if(readBarcodes && !busy && video.videoWidth){
     busy=true;
-    try{ if(await decode(0.85)) return; }catch(e){ sub('движок: '+(e&&e.message||e)); }
+    try{ if(await decode(0.85)) return; }catch(e){ sub('modul: '+(e&&e.message||e)); }
     busy=false;
-    if((++ticks)%10===0) sub('сканирую… наведи код в рамку');
+    if((++ticks)%10===0) sub('skenuji… zaměř kód do rámečku');
   }
   setTimeout(loop, 180);
 }
@@ -161,7 +161,7 @@ function applyAdv(obj){ try{ return track && track.applyConstraints({advanced:[o
     // фонарик
     if(caps.torch){
       const tb=document.getElementById('torch'); tb.classList.remove('hide'); let on=false;
-      tb.onclick=()=>{ on=!on; applyAdv({torch:on}); tb.textContent= on?'🔦 Выкл':'🔦 Свет'; };
+      tb.onclick=()=>{ on=!on; applyAdv({torch:on}); tb.textContent= on?'🔦 Vyp.':'🔦 Světlo'; };
     }
     // зум
     if(caps.zoom){
@@ -173,11 +173,11 @@ function applyAdv(obj){ try{ return track && track.applyConstraints({advanced:[o
     // тап по экрану — точечный фокус
     video.addEventListener('click', ()=>{ applyAdv({focusMode:'single-shot'}); setTimeout(()=>applyAdv({focusMode:'continuous'}),1500); });
 
-    msg('Наведи код в рамку'); sub(readBarcodes?'сканирую…':'движок грузится…');
+    msg('Zaměř kód do rámečku'); sub(readBarcodes?'skenuji…':'modul se načítá…');
     let waited=0; while(!readBarcodes && waited<8000){ await new Promise(r=>setTimeout(r,300)); waited+=300; }
     loop();
   }catch(e){
-    msg('Камера недоступна'); sub('разреши доступ к камере или введи код вручную ('+(e&&e.name||'')+')');
+    msg('Kamera není dostupná'); sub('povol přístup ke kameře nebo zadej kód ručně ('+(e&&e.name||'')+')');
   }
 })();
 </script>
