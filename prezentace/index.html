@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="cs" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google" content="notranslate">
+<title>🦷 Doktor Tkalych — skladový bot · prezentace</title>
+<style>
+/* ============ base ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b1220; --bg2:#0e1728;
+  --ink:#e8eef7; --muted:#8fa1bb;
+  --blue:#2aabee; --mint:#34d19d; --amber:#ffb454; --red:#ff6b6b;
+  --tg-bg:#0e1621; --tg-in:#182533; --tg-out:#2b5278;
+  --btn-bg:rgba(116,178,240,.13); --btn-ink:#8fc6f5; --btn-bd:rgba(116,178,240,.22);
+  --card:#101b2c; --card-bd:#22314a;
+}
+html,body{height:100%}
+body{
+  background:radial-gradient(1200px 800px at 70% -10%, #12203a 0%, var(--bg) 55%) fixed, var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+b{font-weight:700}
+/* ============ chrome ============ */
+.top{position:fixed;left:0;right:0;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:12px 18px;
+  background:linear-gradient(180deg,rgba(11,18,32,.94),rgba(11,18,32,.72) 80%,transparent);}
+.brand{font-weight:800;font-size:15px;letter-spacing:.2px;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.brand .dot{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 12px var(--mint);flex:0 0 auto}
+.chapters{display:flex;gap:5px;flex:1;flex-wrap:wrap;justify-content:center;min-width:0}
+.chp{all:unset;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--muted);padding:5px 10px;border-radius:20px;
+  border:1px solid transparent;white-space:nowrap}
+.chp:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.chp.on{color:#0a1420;background:linear-gradient(135deg,#2aabee,#1d84d4);border-color:transparent}
+.tools{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+.tbtn{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:#cfe0f2;padding:6px 11px;border-radius:9px;
+  border:1px solid var(--card-bd);background:rgba(13,21,34,.7)}
+.tbtn:hover{background:rgba(255,255,255,.08)}
+.tbtn.on{color:#0a1420;background:var(--mint);border-color:transparent}
+.lang{display:flex;border:1px solid var(--card-bd);border-radius:9px;overflow:hidden}
+.lang .tbtn{border:0;border-radius:0}
+.lang .tbtn.on{background:var(--blue)}
+/* ============ deck ============ */
+.deck{position:fixed;inset:0;padding:74px 26px 66px;display:flex;align-items:center;justify-content:center}
+.slide{display:none;width:min(1180px,100%);height:100%;align-items:center;justify-content:center;gap:44px}
+.slide.on{display:flex}
+/* phone */
+.ph{flex:0 0 auto;height:100%;display:flex;align-items:center}
+.phone{
+  position:relative;width:clamp(250px,42vh,340px);aspect-ratio:376/774;
+  background:#000;border-radius:44px;padding:9px;
+  container-type:inline-size;
+  box-shadow:0 40px 90px rgba(0,0,0,.55),0 6px 22px rgba(0,0,0,.45),inset 0 0 0 2px #2a3546;
+}
+.screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--tg-bg);display:flex;flex-direction:column;font-size:min(13.4px,3.75cqw)}
+.notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:32%;height:22px;background:#000;border-radius:0 0 14px 14px;z-index:30}
+.status{height:32px;flex:0 0 auto;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 2px;font-size:.86em;font-weight:600;color:#dfe8f2}
+.sicons{display:flex;gap:5px;align-items:center}
+.bars{display:flex;gap:1.5px;align-items:flex-end}
+.bars i{width:3px;background:#dfe8f2;border-radius:1px;display:block}
+.bars i:nth-child(1){height:4px}.bars i:nth-child(2){height:6px}.bars i:nth-child(3){height:8px}.bars i:nth-child(4){height:10px}
+.batt{width:20px;height:10px;border:1.5px solid #dfe8f2aa;border-radius:3px;position:relative}
+.batt::after{content:"";position:absolute;inset:1.5px;right:5px;background:#dfe8f2;border-radius:1px}
+.tg-head{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:7px 12px 9px;background:#17212b;border-bottom:1px solid #0b131b}
+.back{color:var(--blue);font-size:1.55em;line-height:1;margin-right:-2px}
+.ava{width:2.6em;height:2.6em;border-radius:50%;background:linear-gradient(135deg,#2aabee,#1d7dd4);display:flex;align-items:center;justify-content:center;font-size:1em;flex:0 0 auto}
+.tg-title{flex:1;min-width:0}
+.tg-title b{display:block;font-size:1.03em}
+.tg-title span{display:block;font-size:.84em;color:var(--muted)}
+.dots3{color:var(--muted);font-size:1.28em;letter-spacing:1px}
+.chat{flex:1;overflow:hidden;padding:10px 9px 12px;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;position:relative}
+.daychip{align-self:center;background:rgba(0,0,0,.28);color:#aebdcd;font-size:.8em;padding:3px 10px;border-radius:20px;margin:2px 0}
+.msg{max-width:88%;border-radius:14px;padding:7px 10px 6px;font-size:.95em;line-height:1.34;position:relative;box-shadow:0 1px 1px rgba(0,0,0,.22)}
+.msg.in{align-self:flex-start;background:var(--tg-in);border-bottom-left-radius:5px}
+.msg.in:has(.kb){width:88%}
+.msg.out{align-self:flex-end;background:var(--tg-out);border-bottom-right-radius:5px}
+.msg .t{display:inline-block;float:right;margin:8px -3px -2px 8px;font-size:.76em;color:#7d92a6}
+.msg.out .t{color:#9fc3e2}
+.msg .t .tick{color:#6fb3e0}
+.msg .title{font-weight:700}
+.msg .sub{color:#aebdcd;font-size:.93em}
+.msg i.sl{font-style:italic;color:#aebdcd}
+.msg .ok{color:#62c877}.msg .warn{color:var(--amber)}.msg .bad{color:var(--red)}
+.msg code{font-family:ui-monospace,Consolas,monospace;font-size:.92em;background:rgba(0,0,0,.25);padding:0 4px;border-radius:4px}
+.bq{margin:5px 0 3px;border-left:2.5px solid rgba(143,198,245,.55);padding:3px 8px;background:rgba(143,198,245,.06);border-radius:0 8px 8px 0;font-size:.93em;color:#cfe0f2}
+.react{position:absolute;left:8px;bottom:-9px;background:#1d2c3c;border:1px solid #2c3f53;border-radius:20px;font-size:.78em;padding:1px 7px;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.rows{margin-top:5px;border-left:2.5px solid rgba(143,198,245,.55);padding:2px 0 2px 8px;display:flex;flex-direction:column;gap:2.5px;background:rgba(143,198,245,.05);border-radius:0 8px 8px 0}
+.row{display:flex;justify-content:space-between;gap:10px;font-size:.93em}
+.row em{font-style:normal;color:#cfe0f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row b{font-weight:600;color:#fff;white-space:nowrap}
+.row.dim{color:#8fa1bb}.row.dim em{color:#8fa1bb}
+.row.low em,.row.low b{color:var(--amber)}
+.row.red em,.row.red b{color:var(--red)}
+/* inline keyboard */
+.kb{display:flex;flex-direction:column;gap:4px;margin-top:6px;width:100%}
+.kbrow{display:flex;gap:4px}
+.kbtn{
+  flex:1;text-align:center;padding:.5em .55em;font-size:.92em;font-weight:500;color:var(--btn-ink);
+  background:var(--btn-bg);border:1px solid var(--btn-bd);border-radius:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  position:relative;
+}
+.kbtn.sel{background:rgba(52,209,157,.16);border-color:rgba(52,209,157,.4);color:#7ee0bd}
+.kbtn.l{text-align:left}
+/* reply keyboard (webapp button) */
+.replykb{flex:0 0 auto;background:#17212b;border-top:1px solid #0b131b;padding:7px 10px}
+.rbtn{text-align:center;padding:.62em;font-size:.95em;font-weight:600;color:#8fc6f5;background:#242f3d;border-radius:10px;position:relative}
+/* input bar */
+.inputbar{flex:0 0 auto;display:flex;align-items:center;gap:9px;background:#17212b;padding:8px 12px;border-top:1px solid #0b131b;position:relative}
+.inputbar .clip,.inputbar .mic{font-size:1.35em;color:#708499;flex:0 0 auto}
+.field{flex:1;min-height:2.4em;display:flex;align-items:center;background:#242f3d;border-radius:18px;padding:0 13px;font-size:1em;color:#e8eef7;overflow:hidden;white-space:nowrap}
+.field .ph-t{color:#708499}
+.field .typed{color:#e8eef7}
+.field .bot-pref{color:#2aabee}
+.caret{display:inline-block;width:1.5px;height:15px;background:var(--blue);margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* inline results popup */
+.inline-pop{position:absolute;left:8px;right:8px;bottom:100%;margin-bottom:6px;background:#1d2939;border:1px solid #2c3f53;border-radius:12px;overflow:hidden;box-shadow:0 -8px 30px rgba(0,0,0,.5);z-index:5}
+.ipop-row{display:flex;flex-direction:column;padding:7px 12px;border-bottom:1px solid #253346;position:relative}
+.ipop-row:last-child{border-bottom:0}
+.ipop-row b{font-size:.93em}
+.ipop-row span{font-size:.8em;color:var(--muted)}
+.ipop-row.spot{outline:none;animation:none;box-shadow:inset 0 0 0 2.5px var(--amber);background:rgba(255,180,84,.07)}
+/* scanner (mini app) */
+.scanhead{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;color:#dfe8f2;font-size:.95em;font-weight:600;background:#05080d}
+.scanhead .x{color:var(--blue);font-weight:500}
+.cam{flex:1;position:relative;overflow:hidden;background:
+  radial-gradient(420px 300px at 30% 20%,#1d2836 0%,transparent 60%),
+  radial-gradient(380px 320px at 80% 85%,#14202e 0%,transparent 60%),
+  linear-gradient(180deg,#0a111c,#070c14)}
+.cam .vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 44%,transparent 40%,rgba(0,0,0,.5) 100%)}
+.prodbox{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-2deg);
+  width:70%;background:linear-gradient(160deg,#fdfdfd,#e9edf2);border-radius:8px;padding:11px 12px 10px;
+  box-shadow:0 18px 44px rgba(0,0,0,.6);color:#1c2733;
+}
+.prodbox .pb-brand{font-size:.64em;font-weight:800;letter-spacing:1.6px;color:#1a6fb5}
+.prodbox .pb-name{font-size:.95em;font-weight:800;margin:2px 0 0;color:#15202b;line-height:1.15}
+.prodbox .pb-sub{font-size:.66em;color:#5c6c7c;margin-bottom:7px}
+.pb-codes{display:flex;gap:9px;align-items:center}
+.dm{width:34%;aspect-ratio:1;background:
+  conic-gradient(#15202b 25%,transparent 0 50%,#15202b 0 75%,transparent 0) 0 0/22% 22%,
+  linear-gradient(#15202b,#15202b) left/8% 100% no-repeat,
+  linear-gradient(#15202b,#15202b) bottom/100% 8% no-repeat,#f2f2f2;border:3px solid #f2f2f2;outline:1px solid #ccc}
+.pb-gs1{flex:1;font-family:ui-monospace,Consolas,monospace;font-size:.55em;color:#334;line-height:1.5;word-break:break-all}
+.frame4{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:80%;aspect-ratio:1.12;pointer-events:none}
+.frame4 i{position:absolute;width:24px;height:24px;border:3px solid #fff;opacity:.95}
+.frame4 i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:8px 0 0 0}
+.frame4 i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 8px 0 0}
+.frame4 i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 8px}
+.frame4 i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 8px 0}
+.laser{position:absolute;left:12%;right:12%;height:2.5px;border-radius:2px;background:linear-gradient(90deg,transparent,#ff5f5f 18%,#ff5f5f 82%,transparent);box-shadow:0 0 14px #ff5f5f;top:40%}
+.cam-hint{position:absolute;left:0;right:0;bottom:52px;text-align:center;font-size:.88em;color:#dfe8f2;text-shadow:0 1px 4px #000}
+.cam-tools{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:8px}
+.cam-tool{background:rgba(23,33,43,.85);border:1px solid #2c3f53;color:#dfe8f2;font-size:.82em;font-weight:600;padding:5px 12px;border-radius:18px}
+.cam-input{position:absolute;left:10%;right:10%;top:76%;display:flex;background:rgba(23,33,43,.9);border:1px solid #2c3f53;border-radius:10px;padding:6px 10px;font-size:.8em;color:#708499}
+/* spotlight */
+.spot{outline:2.5px solid var(--amber);outline-offset:1.5px;box-shadow:0 0 0 5px rgba(255,180,84,.18),0 0 22px rgba(255,180,84,.45);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,180,84,.07),0 0 30px rgba(255,180,84,.6)}}
+.spot[data-badge]::after{
+  content:attr(data-badge);position:absolute;top:-9px;right:-7px;width:18px;height:18px;border-radius:50%;
+  background:var(--amber);color:#241300;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:6;
+}
+/* annotation */
+.an{flex:1;min-width:0;max-width:560px;display:flex;flex-direction:column;gap:14px}
+.crumb{font-size:12.5px;font-weight:700;letter-spacing:.6px;color:var(--blue);text-transform:uppercase}
+.an h2{font-size:clamp(22px,3vw,34px);font-weight:800;letter-spacing:-.02em;line-height:1.12;
+  background:linear-gradient(180deg,#fff 30%,#a9d4ff 130%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.an .body{font-size:15px;line-height:1.62;color:#c6d3e4}
+.an .body p{margin:0 0 10px}
+.an .body ul{margin:2px 0 10px;padding-left:0;list-style:none}
+.an .body li{margin:0 0 7px;padding-left:24px;position:relative}
+.an .body li::before{content:"·";position:absolute;left:8px;color:var(--blue);font-weight:900}
+.an .body li.n{padding-left:30px}
+.an .body li.n::before{content:attr(data-n);left:0;top:1px;width:20px;height:20px;border-radius:50%;background:var(--amber);color:#241300;
+  font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.an .body .em{color:#fff;font-weight:600}
+.an .body .mut{color:var(--muted)}
+.tip{border:1px solid var(--card-bd);background:linear-gradient(165deg,#13202f,#0f1927);border-radius:14px;padding:12px 15px;font-size:13.5px;line-height:1.55;color:#aebdcd}
+.tip b{color:#e8eef7}
+/* roles table */
+.roles{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+.roles th,.roles td{padding:7px 10px;text-align:left;border-bottom:1px solid #1d2c40}
+.roles th{color:var(--muted);font-weight:600;font-size:12px}
+.roles td:nth-child(2),.roles td:nth-child(3),.roles th:nth-child(2),.roles th:nth-child(3){text-align:center}
+/* nav */
+.navbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:16px;padding:12px 20px 14px;
+  background:linear-gradient(0deg,rgba(11,18,32,.94),rgba(11,18,32,.7) 75%,transparent)}
+.prog{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),#7cd0ff);border-radius:3px;transition:width .25s}
+.counter{font-size:12.5px;color:var(--muted);min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.nbtn{all:unset;cursor:pointer;width:38px;height:34px;text-align:center;line-height:34px;font-size:17px;color:#cfe0f2;border:1px solid var(--card-bd);border-radius:10px;background:rgba(13,21,34,.7)}
+.nbtn:hover{background:rgba(255,255,255,.08)}
+.hintkeys{font-size:11px;color:#5d7188}
+/* ============ mobile (portrait / narrow) — screen only, never print ============ */
+@media screen and (max-width:860px){
+  .top{padding:8px 10px;gap:8px;flex-wrap:wrap}
+  .brand{font-size:12.5px}
+  .brand .txt{max-width:44vw;overflow:hidden;text-overflow:ellipsis}
+  .tools{margin-left:auto}
+  .tbtn{font-size:11px;padding:5px 8px}
+  .chapters{order:5;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;
+    scrollbar-width:none;-ms-overflow-style:none;padding:2px 0 3px}
+  .chapters::-webkit-scrollbar{display:none}
+  .chp{flex:0 0 auto;font-size:11px;padding:4px 9px}
+  .deck{padding:92px 12px 58px;display:block;overflow:hidden}
+  .slide{width:100%;height:100%}
+  .slide.on{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:18px;
+    overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px 2px 24px}
+  .ph{height:auto;width:100%;justify-content:center;flex:0 0 auto}
+  .phone{width:min(72vw,300px)}
+  .an{max-width:100%;flex:0 0 auto;gap:10px}
+  .an h2{font-size:23px}
+  .an .body{font-size:14.5px}
+  .navbar{padding:8px 12px 10px;gap:10px}
+  .hintkeys{display:none}
+  .counter{min-width:52px;font-size:11.5px}
+}
+/* ============ print / PDF ============ */
+@media print{
+  /* default: desktop 16:9 landscape */
+  @page{size:297mm 167mm;margin:0}
+  html,body{overflow:visible;background:var(--bg)}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .top,.navbar{display:none!important}
+  .deck{position:static;padding:0;display:block}
+  .slide{display:flex!important;width:297mm;height:167mm;padding:10mm 14mm;gap:12mm;page-break-after:always;break-after:page;
+    flex-direction:row;align-items:center;justify-content:center;overflow:hidden;background:var(--bg)}
+  .slide.on{flex-direction:row}
+  .ph{height:100%;width:auto;display:flex;align-items:center}
+  .phone{width:64mm}
+  .an{max-width:none;flex:1}
+  .an h2{background:none;-webkit-background-clip:initial;background-clip:initial;color:#eef5ff;-webkit-text-fill-color:#eef5ff}
+  .an .body{font-size:13px}
+  .tip{font-size:12.5px}
+  .spot{animation:none}
+  .caret{animation:none}
+  /* phone variant: tall portrait page (~20:9), column layout */
+  body.pdf-mobile .slide,
+  body.pdf-mobile .slide.on{width:120mm;height:260mm;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:7mm 8mm;gap:5mm}
+  body.pdf-mobile .ph{height:auto;width:100%;justify-content:center}
+  body.pdf-mobile .phone{width:58mm}
+  body.pdf-mobile .an{max-width:100%;width:100%;flex:0 1 auto;gap:8px}
+  body.pdf-mobile .crumb{font-size:10.5px}
+  body.pdf-mobile .an h2{font-size:18px}
+  body.pdf-mobile .an .body{font-size:13px;line-height:1.5}
+  body.pdf-mobile .an .body p{margin-bottom:7px}
+  body.pdf-mobile .an .body li{margin-bottom:5px}
+  body.pdf-mobile .tip{font-size:11.5px;padding:9px 12px}
+  body.pdf-mobile .roles{font-size:11.5px}
+  body.pdf-mobile .roles th,body.pdf-mobile .roles td{padding:5px 7px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="dot"></span><span class="txt" id="brandT">🦷 Doktor Tkalych · skladový bot</span></div>
+  <nav class="chapters" id="chapters"></nav>
+  <div class="tools">
+    <span class="lang">
+      <button class="tbtn" id="langCs">CZ</button>
+      <button class="tbtn" id="langRu">RU</button>
+      <button class="tbtn" id="langEn">EN</button>
+    </span>
+    <button class="tbtn" id="autoBtn" title="Auto">▶</button>
+    <button class="tbtn" id="printBtn">⎙ PDF</button>
+  </div>
+</header>
+
+<noscript>
+  <div style="position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:24px;background:#0b1220">
+    <div style="max-width:440px;text-align:center;font-size:15px;line-height:1.65;color:#c6d3e4">
+      <div style="font-size:40px;margin-bottom:10px">🦷</div>
+      <b style="color:#fff">Tento prohlížeč nespouští JavaScript.</b><br>
+      Otevři stránku v Safari/Chrome, nebo použij PDF verzi.<br><br>
+      <b style="color:#fff">Этот просмотрщик не выполняет JavaScript.</b><br>
+      Открой страницу в Safari/Chrome или используй PDF-версию.<br><br>
+      <b style="color:#fff">This viewer doesn't run JavaScript.</b><br>
+      Open the page in Safari/Chrome, or use the PDF version.
+    </div>
+  </div>
+</noscript>
+<main class="deck" id="deck"></main>
+
+<footer class="navbar">
+  <button class="nbtn" id="prev">‹</button>
+  <div class="prog"><i id="progFill"></i></div>
+  <span class="counter" id="counter"></span>
+  <button class="nbtn" id="next">›</button>
+  <span class="hintkeys" id="keysHint">← →</span>
+</footer>
+
+<script>
+"use strict";
+/* ================================================================
+   Doktor Tkalych — step-by-step presentation of @wmsdent_bot.
+   Bot strings are 1:1 from the bot's i18n locales (cs + ru are the
+   live bot's real languages; EN is a faithful translation).
+   ================================================================ */
+const params = new URLSearchParams(location.search);
+const LANGS = ["cs","ru","en"];
+let LANG = LANGS.includes(params.get("lang")) ? params.get("lang") : "cs";
+const $ = s => document.querySelector(s);
+const L = (cs, en, ru) => LANG === "en" ? en : (LANG === "ru" ? (ru !== undefined ? ru : cs) : cs);
+
+/* ?pdf=mobile → tall portrait pages for phone reading (print/PDF only).
+   The @page size can't be scoped by a body class, so it's injected here
+   as the last stylesheet — later @page wins over the default landscape. */
+if (params.get("pdf") === "mobile") {
+  document.body.classList.add("pdf-mobile");
+  const pg = document.createElement("style");
+  pg.textContent = "@media print{@page{size:120mm 260mm;margin:0}}";
+  document.head.appendChild(pg);
+}
+
+/* ---------- tiny html builders ---------- */
+function phone(inner, {input = null, replyBtn = null, inlinePop = null} = {}) {
+  const inputHtml = input === false ? "" : `
+    <div class="inputbar">${inlinePop || ""}<span class="clip">📎</span>
+      <div class="field">${input || `<span class="ph-t">${L("Zpráva","Message","Сообщение")}</span>`}</div>
+      <span class="mic">🎤</span></div>`;
+  return `<div class="ph"><div class="phone"><div class="notch"></div><div class="screen">
+    <div class="status"><span>9:41</span><span class="sicons"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
+    <div class="tg-head"><span class="back">‹</span><div class="ava">🦷</div>
+      <div class="tg-title"><b>Doktor Tkalych</b><span>@wmsdent_bot</span></div><span class="dots3">⋮</span></div>
+    <div class="chat">${inner}</div>
+    ${replyBtn ? `<div class="replykb">${replyBtn}</div>` : ""}${inputHtml}
+  </div></div></div>`;
+}
+function scanPhone(inner) { // mini-app scanner screen (the live mini-app is Czech)
+  return `<div class="ph"><div class="phone"><div class="notch"></div><div class="screen">
+    <div class="status"><span>9:41</span><span class="sicons"><span class="bars"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span></div>
+    <div class="scanhead"><span class="x">${L("Zavřít","Close","Zavřít")}</span><span>@wmsdent_bot</span><span class="dots3">⋮</span></div>
+    ${inner}
+  </div></div></div>`;
+}
+const chip = t => `<div class="daychip">${t}</div>`;
+const mIn  = (html, extra="") => `<div class="msg in">${html}<span class="t">9:41</span>${extra}</div>`;
+const mOut = (html, extra="") => `<div class="msg out">${html}<span class="t">9:41 <span class="tick">✓✓</span></span>${extra}</div>`;
+function kb(rows) {
+  return `<div class="kb">` + rows.map(r => `<div class="kbrow">` +
+    r.map(b => `<span class="kbtn${b.spot?" spot":""}${b.sel?" sel":""}${b.left?" l":""}"${b.badge?` data-badge="${b.badge}"`:""}>${b.t}</span>`).join("") +
+    `</div>`).join("") + `</div>`;
+}
+const money = s => s + " Kč";
+
+/* ---------- shared bot strings (cs/ru = real locales, en = translation) ---------- */
+const S = () => ({
+  menu_stock:   L("📦 Zásoby","📦 Stock","📦 Остатки"),
+  menu_receive: L("➕ Příjem","➕ Receiving","➕ Приход"),
+  menu_consume: L("📤 Výdej","📤 Dispense","📤 Расход"),
+  menu_find:    L("🔎 Najít materiál","🔎 Find material","🔎 Найти материал"),
+  menu_admin:   L("⚙️ Administrace","⚙️ Admin","⚙️ Админка"),
+  menu_lang:    L("🌐 Jazyk","🌐 Language","🌐 Язык"),
+  home: L("🦷 <span class='title'>Doktor Tkalych</span><br><span class='sub'>📦 Sklad kliniky · hlavní menu</span>",
+          "🦷 <span class='title'>Doktor Tkalych</span><br><span class='sub'>📦 Clinic stock · main menu</span>",
+          "🦷 <span class='title'>Doktor Tkalych</span><br><span class='sub'>📦 Склад клиники · главное меню</span>"),
+  back: L("⬅️ Zpět","⬅️ Back","⬅️ Назад"),
+  toMenu: L("⬅️ Do menu","⬅️ Back to menu","⬅️ В меню"),
+  cartTitle: L("📤 <span class='title'>Výdej</span>","📤 <span class='title'>Dispense</span>","📤 <span class='title'>Расход</span>"),
+  cartEmpty: L("(košík je prázdný)","(cart is empty)","(корзина пуста)"),
+  cartScan: L("📷 Skenovat","📷 Scan","📷 Сканировать"),
+  cartFind: L("🔎 Najít podle názvu","🔎 Search by name","🔎 Найти по названию"),
+  cartCatalog: L("📂 Vybrat v katalogu","📂 Pick from catalog","📂 Выбрать в каталоге"),
+  cartAdd: L("➕ Přidat položku","➕ Add item","➕ Добавить позицию"),
+  cartCommit: L("✅ Potvrdit výdej","✅ Confirm dispense","✅ Оформить расход"),
+  cartCommitAdd: L("✅ Potvrdit příjem","✅ Confirm receiving","✅ Оформить приход"),
+  cartCancel: L("❌ Zrušit vše","❌ Cancel all","❌ Отменить всё"),
+  cancel1: L("❌ Zrušit","❌ Cancel","❌ Отменить"),
+  sale: L("💰 Prodej","💰 Sale","💰 Продажа"),
+  pcs: L("ks","pcs","шт"),
+  today: L("dnes","Today","Сегодня"),
+  ordinace: n => L("🚪 Ordinace ","🚪 Room ","🚪 Кабинет ") + n,
+  roomWord: L("Ordinace","Room","Кабинет"),
+});
+
+/* ---------- catalog sample (real items; catalog names are Czech in the live bot) ---------- */
+const P = {
+  sept:  {cs:"Septanest s adrenalinem 1:100 000 · 50×1,7 ml", en:"Septanest with adrenaline 1:100 000 · 50×1.7 ml", sku:"SEP-100", stock:46},
+  impl:  {cs:"PCA Dental Implant Ø3.75mm L10mm", en:"PCA Dental Implant Ø3.75mm L10mm", sku:"22-70001", stock:12},
+  glove: {cs:"Rukavice nitrilové M · 100 ks", en:"Nitrile gloves M · 100 pcs", sku:"RUK-M", stock:200},
+  need:  {cs:"Septoject jehly 27G · 100 ks", en:"Septoject needles 27G · 100 pcs", sku:"SJ-27", stock:310},
+  gutta: {cs:"Guttapercha čepy ISO 25 · 120 ks", en:"Gutta-percha points ISO 25 · 120 pcs", stock:4},
+  etch:  {cs:"Leptací gel 37% · 3×5 ml", en:"Etch gel 37% · 3×5 ml", stock:2},
+};
+const pn = p => LANG === "en" ? p.en : p.cs;
+
+/* ---------- screens ---------- */
+function mainMenuKb(role, spotKey) {
+  const s = S();
+  const rows = [[{t:s.menu_stock, spot:spotKey==="stock"}]];
+  if (role === "admin") rows.push([{t:s.menu_receive, spot:spotKey==="receive"}]);
+  rows.push([{t:s.menu_consume, spot:spotKey==="consume"}]);
+  rows.push([{t:s.menu_find, spot:spotKey==="find"}]);
+  if (role === "admin") rows.push([{t:s.menu_admin, spot:spotKey==="admin"}]);
+  rows.push([{t:s.menu_lang, spot:spotKey==="lang"}]);
+  return rows;
+}
+const homeScreen = (role, spotKey) => phone(chip(S().today) + mIn(S().home + kb(mainMenuKb(role, spotKey))));
+
+function adminMenuScreen(spotKey) {
+  return phone(chip(S().today) + mIn(`⚙️ <span class="title">${L("Administrace","Admin panel","Админка")}</span>` + kb([
+    [{t:L("📝 Požadavky","📝 Requests","📝 Заявки"), spot:spotKey==="req"}],
+    [{t:L("📥 Příjem faktur","📥 Incoming invoices","📥 Накладные на приём"), spot:spotKey==="inv"}],
+    [{t:L("📊 Přehledy","📊 Reports","📊 Отчёты"), spot:spotKey==="rep"}],
+    [{t:L("🗑 Odpis","🗑 Write-off","🗑 Списание"), spot:spotKey==="wo"}],
+    [{t:L("📜 Historie","📜 History","📜 История"), spot:spotKey==="hist"}],
+    [{t:L("📦 Zboží","📦 Products","📦 Товары"), spot:spotKey==="prods"}],
+    [{t:L("🔧 Servisní","🔧 Maintenance","🔧 Служебное"), spot:spotKey==="svc"}],
+    [{t:L("❓ Nápověda","❓ Help","❓ Справка"), spot:spotKey==="faq"}],
+    [{t:S().back}],
+  ])));
+}
+
+const cartButtons = (spots={}) => [
+  [{t:S().cartScan, spot:!!spots.scan, badge:spots.scan}],
+  [{t:S().cartFind, spot:!!spots.find, badge:spots.find}],
+  [{t:S().cartCatalog, spot:!!spots.cat, badge:spots.cat}],
+];
+
+/* ================================================================
+                              FRAMES
+   ================================================================ */
+function buildFrames() {
+  const s = S();
+  const CH = [
+    L("Úvod","Intro","Введение"), L("Začínáme","Getting started","Начало работы"), L("Výdej","Dispensing","Расход"),
+    L("Prodej","Sale","Продажа"), L("Zásoby","Stock","Остатки"), L("Příjem","Receiving","Приход"),
+    L("Faktury","Invoices","Накладные"), L("Pořádek","Housekeeping","Порядок"), L("Kontrola","Oversight","Контроль"), L("Shrnutí","Summary","Итоги"),
+  ];
+  const F = [];
+  const add = (ch, title, phoneHtml, bodyHtml, tip) => F.push({ch, title, phoneHtml, bodyHtml, tip});
+
+  /* ---------- CH 0 · Úvod ---------- */
+  add(0, L("Sklad kliniky žije v Telegramu","The clinic's stockroom lives in Telegram","Склад клиники живёт в Telegram"),
+    homeScreen("admin"),
+    L(`<p><b class="em">🦷 Doktor Tkalych</b> — skladový bot stomatologické kliniky. Žádný nový program: celý sklad se ovládá v chatu, který personál už zná.</p>
+       <ul>
+         <li><b class="em">1 893 položek</b> katalogu — sestaveno přímo z faktur dodavatelů</li>
+         <li>příjem, výdej do ordinace, prodej, inventura, odpisy, přehledy</li>
+         <li>dvě role: <b class="em">👑 admin</b> a <b class="em">🦷 asistent/ka</b></li>
+         <li>dvojjazyčné rozhraní (čeština / ruština), ceny v Kč</li>
+       </ul>`,
+      `<p><b class="em">🦷 Doktor Tkalych</b> — the inventory bot of a dental clinic. No new software: the whole stockroom is managed in a chat the staff already knows.</p>
+       <ul>
+         <li><b class="em">1,893 catalog items</b> — built straight from supplier invoices</li>
+         <li>receiving, dispensing to operatories, sales, stocktake, write-offs, reports</li>
+         <li>two roles: <b class="em">👑 admin</b> and <b class="em">🦷 assistant</b></li>
+         <li>bilingual UI (Czech / Russian), prices in Kč (CZK)</li>
+       </ul>`,
+      `<p><b class="em">🦷 Doktor Tkalych</b> — складской бот стоматологической клиники. Никаких новых программ: весь склад живёт в чате, которым персонал уже умеет пользоваться.</p>
+       <ul>
+         <li><b class="em">1 893 позиции</b> каталога — собраны прямо из накладных поставщиков</li>
+         <li>приход, расход в кабинет, продажа, инвентаризация, списания, отчёты</li>
+         <li>две роли: <b class="em">👑 админ</b> и <b class="em">🦷 ассистент</b></li>
+         <li>двуязычный интерфейс (чешский / русский), цены в Kč</li>
+       </ul>`),
+    L("<b>Jak číst tuto prezentaci:</b> vlevo je vždy skutečná obrazovka bota, oranžově svítí tlačítko, na které se klepe. Listuj šipkami ← → nebo přejetím prstem.",
+      "<b>How to read this deck:</b> the left side is always a real bot screen; the button to tap glows orange. Navigate with ← → keys or swipe.",
+      "<b>Как читать презентацию:</b> сверху/слева — настоящий экран бота, оранжевым подсвечена кнопка, которую нажимают. Листай стрелками ← → или свайпом."));
+
+  /* ---------- CH 1 · Začínáme ---------- */
+  add(1, L("První spuštění: /start a jazyk","First run: /start and language","Первый запуск: /start и язык"),
+    phone(chip(s.today) + mOut("/start") +
+      mIn(`Select your language:` + kb([[{t:"Čeština", spot:true}],[{t:"Русский"}]]))),
+    L(`<p>Zaměstnanec otevře <b class="em">@wmsdent_bot</b> a pošle <b class="em">/start</b>. Bot se nejdřív zeptá na jazyk — čeština pro personál, ruština je k dispozici také.</p>
+       <p>Jazyk jde kdykoli změnit tlačítkem <b class="em">🌐 Jazyk</b> v hlavním menu.</p>`,
+      `<p>An employee opens <b class="em">@wmsdent_bot</b> and sends <b class="em">/start</b>. The bot first asks for a language — Czech for the staff, Russian is available too.</p>
+       <p>The language can be switched any time via <b class="em">🌐 Language</b> in the main menu.</p>`,
+      `<p>Сотрудник открывает <b class="em">@wmsdent_bot</b> и отправляет <b class="em">/start</b>. Первым делом бот спрашивает язык — чешский для персонала, русский тоже доступен.</p>
+       <p>Язык в любой момент меняется кнопкой <b class="em">🌐 Язык</b> в главном меню.</p>`),
+    L("Bot nemůže psát lidem jako první — nového zaměstnance zve admin odkazem (kapitola Kontrola).",
+      "A bot can't message people first — a new employee joins via an invite link from the admin (see Oversight).",
+      "Бот не может написать человеку первым — нового сотрудника админ приглашает ссылкой (глава «Контроль»)."));
+
+  add(1, L("Onboarding: minutový průvodce","Onboarding: a one-minute guide","Онбординг: гид за минуту"),
+    phone(chip(s.today) +
+      mIn(`🦷 <span class="title">Doktor Tkalych</span><br><i class="sl">Lékaři jsou hlavní hodnotou společnosti</i><br><br>👋 ${L("Toto je skladový bot kliniky. Za minutu vám ukážu, jak ho používat.","This is the clinic's inventory bot. Give me a minute and I'll show you how to use it.","Это складской бот клиники. Покажу за минуту, как им пользоваться.")}` +
+        kb([[{t:L("Dále ▶️","Next ▶️","Далее ▶️"), spot:true},{t:L("Přeskočit","Skip","Пропустить")}]]))),
+    L(`<p>Po volbě jazyka bot nováčka provede kartami onboardingu — <b class="em">podle jeho role</b>: asistentka vidí výdej a zásoby, admin dostane i faktury, uživatele a přehledy.</p>`,
+      `<p>After picking a language the bot walks the newcomer through onboarding cards — <b class="em">tailored to their role</b>: an assistant sees dispensing and stock, an admin also gets invoices, users and reports.</p>`,
+      `<p>После выбора языка бот проводит новичка по карточкам онбординга — <b class="em">под его роль</b>: ассистент видит расход и остатки, админ — ещё и накладные, сотрудников, отчёты.</p>`),
+    null);
+
+  add(1, L("Karta pro asistentku: výdej ve 4 krocích","The assistant card: dispensing in 4 steps","Карточка ассистента: расход за 4 шага"),
+    phone(chip(s.today) +
+      mIn(L(`📤 <span class="title">Výdej materiálu do ordinace</span><br>1) «📤 Výdej»<br>2) přidej zboží jedním ze tří způsobů:<br>&nbsp;&nbsp;&nbsp;📷 skenovat kód · 🔎 najít podle názvu · 📂 vybrat v katalogu<br>3) zadej počet<br>4) «✅ Potvrdit výdej» → vyber ordinaci — hotovo.`,
+             `📤 <span class="title">Dispensing material to an operatory</span><br>1) «📤 Dispense»<br>2) add an item one of three ways:<br>&nbsp;&nbsp;&nbsp;📷 scan the code · 🔎 search by name · 📂 pick from the catalog<br>3) enter the quantity<br>4) «✅ Confirm dispense» → choose the room — done.`,
+             `📤 <span class="title">Выдать материал в кабинет</span><br>1) «📤 Расход»<br>2) добавь товар одним из трёх способов:<br>&nbsp;&nbsp;&nbsp;📷 сканировать код · 🔎 найти по названию · 📂 выбрать в каталоге<br>3) укажи количество<br>4) «✅ Оформить расход» → выбери кабинет — готово.`) +
+        kb([[{t:L("✅ Rozumím, jdeme na to","✅ Got it, let's go","✅ Понятно, поехали"), spot:true}]]))),
+    L(`<p>Toto je skutečný text onboardingu. Celé školení nové asistentky = <b class="em">jedna minuta čtení v chatu</b>. Žádné manuály, žádná instalace.</p>`,
+      `<p>This is the actual onboarding copy. Training a new assistant = <b class="em">one minute of reading in the chat</b>. No manuals, no installs.</p>`,
+      `<p>Это реальный текст онбординга. Всё обучение новой ассистентки = <b class="em">минута чтения в чате</b>. Никаких инструкций и установок.</p>`),
+    null);
+
+  add(1, L("Hlavní menu: každá role vidí jen své","Main menu: each role sees only its own","Главное меню: каждой роли — своё"),
+    homeScreen("admin","admin"),
+    L(`<p>Menu <b class="em">admina</b> (na obrazovce): zásoby, příjem, výdej, hledání, administrace.</p>
+       <p>Menu <b class="em">asistentky</b> je kratší — jen 📦 Zásoby, 📤 Výdej, 🔎 Najít materiál a 🌐 Jazyk. Příjem, faktury, inventura a administrace jí zůstávají skryté.</p>`,
+      `<p>The <b class="em">admin</b> menu (on screen): stock, receiving, dispensing, search, admin panel.</p>
+       <p>The <b class="em">assistant</b> menu is shorter — just 📦 Stock, 📤 Dispense, 🔎 Find material and 🌐 Language. Receiving, invoices, stocktake and the admin panel stay hidden.</p>`,
+      `<p>Меню <b class="em">админа</b> (на экране): остатки, приход, расход, поиск, админка.</p>
+       <p>Меню <b class="em">ассистента</b> короче — только 📦 Остатки, 📤 Расход, 🔎 Найти материал и 🌐 Язык. Приход, накладные, инвентаризация и админка скрыты.</p>`),
+    L("Práva se řídí centrální maticí rolí — co role nesmí, to v menu vůbec nevidí.",
+      "Permissions come from a central role matrix — whatever a role can't do simply never appears in its menu.",
+      "Права задаёт центральная матрица ролей — чего роли нельзя, того в меню просто нет."));
+
+  /* ---------- CH 2 · Výdej ---------- */
+  add(2, L("Denní rutina č. 1: výdej do ordinace","Daily routine no. 1: dispense to an operatory","Ежедневная рутина №1: расход в кабинет"),
+    homeScreen("assistant","consume"),
+    L(`<p>Nejčastější operace v klinice: asistentka bere materiál do ordinace a <b class="em">hned ho odepíše</b> v botu. Sklad tak souhlasí s realitou v každém okamžiku.</p>
+       <ul><li class="n" data-n="1">klepni na <b class="em">📤 Výdej</b></li></ul>`,
+      `<p>The most frequent operation in the clinic: an assistant takes material into an operatory and <b class="em">writes it off immediately</b> in the bot. Stock always matches reality.</p>
+       <ul><li class="n" data-n="1">tap <b class="em">📤 Dispense</b></li></ul>`,
+      `<p>Самая частая операция в клинике: ассистентка берёт материал в кабинет и <b class="em">сразу списывает</b> его в боте. Склад в любой момент сходится с реальностью.</p>
+       <ul><li class="n" data-n="1">нажми <b class="em">📤 Расход</b></li></ul>`),
+    null);
+
+  add(2, L("Košík: tři způsoby, jak přidat položku","The cart: three ways to add an item","Корзина: три способа добавить позицию"),
+    phone(chip(s.today) + mIn(s.cartTitle + `<br><span class="sub">${s.cartEmpty}</span>` +
+      kb([...cartButtons({scan:"1", find:"2", cat:"3"}), [{t:s.cancel1}]]))),
+    L(`<p>Otevřel se košík výdeje. Zboží do něj lze přidat třemi způsoby — každý se hodí na jinou situaci:</p>
+       <ul>
+         <li class="n" data-n="1"><b class="em">📷 Skenovat</b> — kamera čte kód přímo z balení</li>
+         <li class="n" data-n="2"><b class="em">🔎 Najít podle názvu</b> — živý našeptávač při psaní</li>
+         <li class="n" data-n="3"><b class="em">📂 Vybrat v katalogu</b> — procházení po kategoriích</li>
+       </ul>
+       <p class="mut">Čtvrtá cesta: prostě botovi napsat název — ukáže shody (krok 6).</p>`,
+      `<p>The dispense cart is open. There are three ways to add an item — each fits a different situation:</p>
+       <ul>
+         <li class="n" data-n="1"><b class="em">📷 Scan</b> — the camera reads the code right off the package</li>
+         <li class="n" data-n="2"><b class="em">🔎 Search by name</b> — live suggestions as you type</li>
+         <li class="n" data-n="3"><b class="em">📂 Pick from catalog</b> — browse by category</li>
+       </ul>
+       <p class="mut">There's a fourth way too: just type a name into the chat — the bot shows matches (step 6).</p>`,
+      `<p>Открылась корзина расхода. Добавить товар можно тремя способами — под разные ситуации:</p>
+       <ul>
+         <li class="n" data-n="1"><b class="em">📷 Сканировать</b> — камера читает код прямо с упаковки</li>
+         <li class="n" data-n="2"><b class="em">🔎 Найти по названию</b> — живые подсказки при наборе</li>
+         <li class="n" data-n="3"><b class="em">📂 Выбрать в каталоге</b> — по категориям</li>
+       </ul>
+       <p class="mut">Есть и четвёртый: просто написать боту название — покажет совпадения (шаг 6).</p>`),
+    null);
+
+  add(2, L("Skener: namiř a je to","Scanner: point and done","Сканер: навёл — готово"),
+    scanPhone(`<div class="cam"><div class="vig"></div>
+      <div class="prodbox">
+        <div class="pb-brand">PALTOP</div>
+        <div class="pb-name">PCA Dental Implant</div>
+        <div class="pb-sub">Ø3.75mm · L10mm · REF 22-70001 · STERILE R</div>
+        <div class="pb-codes"><div class="dm"></div>
+          <div class="pb-gs1">(01)0729011765028<br>(21)22-70001<br>(10)13488<br>(17)280531</div></div>
+      </div>
+      <div class="frame4"><i></i><i></i><i></i><i></i></div>
+      <div class="laser"></div>
+      <div class="cam-hint">${L("Zaměř kód do rámečku","Aim the code into the frame","Zaměř kód do rámečku")}</div>
+      <div class="cam-tools"><span class="cam-tool">🔦 ${L("Světlo","Light","Světlo")}</span><span class="cam-tool">1×</span></div>
+      <div class="cam-input">${L("Zadat kód ručně…","Type the code manually…","Zadat kód ručně…")}</div>
+    </div>`),
+    L(`<p>Tlačítko «📷 Skenovat» otevře <b class="em">živou kameru přímo v Telegramu</b> (Mini App). Čte EAN, QR i DataMatrix — včetně <b class="em">GS1</b> kódů na implantátech a anesteticích.</p>
+       <p>Z jednoho kódu bot vytáhne najednou: <b class="em">GTIN</b> (o jaké zboží jde), <b class="em">šarži (LOT)</b> a <b class="em">expiraci</b>.</p>`,
+      `<p>The «📷 Scan» button opens a <b class="em">live camera right inside Telegram</b> (Mini App). It reads EAN, QR and DataMatrix — including <b class="em">GS1</b> codes on implants and anesthetics.</p>
+       <p>From a single code the bot extracts at once: the <b class="em">GTIN</b> (which product), the <b class="em">batch (LOT)</b> and the <b class="em">expiry date</b>.</p>`,
+      `<p>Кнопка «📷 Сканировать» открывает <b class="em">живую камеру прямо в Telegram</b> (Mini App). Читает EAN, QR и DataMatrix — включая <b class="em">GS1</b>-коды на имплантах и анестетиках.</p>
+       <p>Из одного кода бот достаёт сразу: <b class="em">GTIN</b> (что за товар), <b class="em">партию (LOT)</b> и <b class="em">срок годности</b>.</p>`),
+    L("Je tam 🔦 svítilna, zoom a ruční zadání kódu. Neznámý kód jde jedním klepnutím «🔗 Přiřadit» ke kartě — příště už se najde sám.",
+      "There's a 🔦 light, zoom and manual code entry. An unknown code can be «🔗 Linked» to a product card in one tap — next time it's found automatically.",
+      "Есть 🔦 фонарик, зум и ручной ввод кода. Незнакомый код одним нажатием «🔗 Привязать» цепляется к карточке — дальше находится сам. Сам сканер — чешский (единый для клиники)."));
+
+  add(2, L("Kód načten → rovnou počet kusů","Code read → straight to the quantity","Код считан → сразу количество"),
+    phone(chip(s.today) +
+      mIn(`📷 <span class="title">${L("Kód načten","Code scanned","Код считан")}</span><br>
+        <span class="sub">GTIN: <code>0729011765028</code><br>${L("Kód (21)","Code (21)","Артикул (21)")}: <code>22-70001</code><br>${L("Šarže (LOT)","Batch (LOT)","Партия (LOT)")}: 13488<br>${L("Expirace","Expiry","Срок годности")}: 05/2028</span>`) +
+      mIn(`📤 <span class="title">${pn(P.impl)}</span><br>${L("Sklad","In stock","Остаток")}: ${P.impl.stock} ${s.pcs}<br><br>${L("Kolik vydat? Tlačítkem 1/2/3/4 nebo číslem:","How many to dispense? Tap 1/2/3/4 or type a number:","Сколько выдать? Кнопкой 1/2/3/4 или числом:")}` +
+        kb([[{t:"1", spot:true},{t:"2"},{t:"3"},{t:"4"}],[{t:s.back}]]))),
+    L(`<p>Sken uvnitř výdeje nezdržuje: bot položku <b class="em">rovnou pozná</b> a ptá se jen na počet. Rychlá tlačítka 1–4, nebo napiš libovolné číslo.</p>
+       <p>Šarže a expirace z kódu se ukládají k pohybu — dohledatelnost pro audit je zadarmo.</p>`,
+      `<p>Scanning inside the dispense flow wastes no time: the bot <b class="em">recognizes the item instantly</b> and only asks for the quantity. Quick buttons 1–4, or type any number.</p>
+       <p>The batch and expiry from the code are stored with the movement — audit traceability comes for free.</p>`,
+      `<p>Скан внутри расхода не тормозит: бот <b class="em">сразу узнаёт товар</b> и спрашивает только количество. Быстрые кнопки 1–4 или любое число текстом.</p>
+       <p>Партия и срок из кода сохраняются вместе с движением — прослеживаемость для аудита бесплатно.</p>`),
+    null);
+
+  add(2, L("Živé hledání: píšeš — nabízí","Live search: you type — it suggests","Живой поиск: печатаешь — предлагает"),
+    phone(chip(s.today) + mIn(s.cartTitle + `<br><span class="sub">1. ${pn(P.impl)} — 1 ${s.pcs}</span>` +
+      kb(cartButtons({find:true}))),
+      {inlinePop: `<div class="inline-pop">
+         <div class="ipop-row spot"><b>${pn(P.sept)}</b><span>${L("sklad","stock","остаток")} 46 · SEP-100</span></div>
+         <div class="ipop-row"><b>${pn(P.need)}</b><span>${L("sklad","stock","остаток")} 310 · SJ-27</span></div>
+         <div class="ipop-row"><b>Septanest bez adrenalinu · 50×1,7 ml</b><span>${L("sklad","stock","остаток")} 12</span></div>
+       </div>`,
+       input: `<span class="bot-pref">@wmsdent_bot</span>&nbsp;<span class="typed">sept</span><span class="caret"></span>`}),
+    L(`<p>Tlačítko «🔎 Najít podle názvu» předvyplní do řádku <b class="em">@wmsdent_bot</b> — stačí psát. Shody naskakují <b class="em">během psaní</b>, přímo nad klávesnicí.</p>
+       <p>Klepnutí na výsledek přidá položku do košíku a zeptá se na počet (1–4 nebo ✏️ jiné množství).</p>`,
+      `<p>The «🔎 Search by name» button pre-fills <b class="em">@wmsdent_bot</b> into the input — just keep typing. Matches appear <b class="em">as you type</b>, right above the keyboard.</p>
+       <p>Tapping a result adds the item to the cart and asks for the quantity (1–4 or ✏️ custom).</p>`,
+      `<p>Кнопка «🔎 Найти по названию» подставляет в строку <b class="em">@wmsdent_bot</b> — остаётся печатать. Совпадения выскакивают <b class="em">прямо во время набора</b>, над клавиатурой.</p>
+       <p>Тап по результату добавляет позицию в корзину и спрашивает количество (1–4 или ✏️ другое число).</p>`),
+    L("Živé hledání funguje jen v chatu s botem a jen pro role s právem výdeje.",
+      "Live search works only inside the bot chat and only for roles allowed to dispense.",
+      "Живой поиск работает только в чате с ботом и только для ролей с правом расхода."));
+
+  add(2, L("Nebo prostě napiš název","Or just type the name","Или просто напиши название"),
+    phone(chip(s.today) + mOut("rukavice") +
+      mIn(L(`🔎 <span class="title">Našel 2</span> pro «rukavice» — klepni pro výdej:`,
+             `🔎 <span class="title">Found 2</span> for “rukavice” — tap to dispense:`,
+             `🔎 <span class="title">Нашёл 2</span> по «rukavice» — нажми, чтобы выдать:`) +
+        kb([[{t:`${pn(P.glove)} · 200`, spot:true, left:true}],[{t:L("Rukavice latexové S · 100 ks · 80","Latex gloves S · 100 pcs · 80","Rukavice latexové S · 100 ks · 80"), left:true}],[{t:s.toMenu}]]))),
+    L(`<p>Čtvrtá cesta, nulové učení: <b class="em">napiš botovi název jako zprávu</b>. Bot vrátí seznam shod s aktuálním skladem — klepnutí = výdej.</p>`,
+      `<p>The fourth way, zero learning curve: <b class="em">message the bot a product name</b>. It returns matches with the current stock — one tap dispenses.</p>`,
+      `<p>Четвёртый способ, учиться не надо вообще: <b class="em">напиши боту название сообщением</b>. Он вернёт совпадения с текущим остатком — тап = списание.</p>`),
+    null);
+
+  add(2, L("Košík naplněn → potvrdit","Cart filled → confirm","Корзина набрана → оформить"),
+    phone(chip(s.today) + mIn(s.cartTitle +
+      `<br><span class="sub">1. ${pn(P.impl)} — 1 ${s.pcs}<br>2. ${pn(P.sept)} — 2 ${s.pcs}<br>3. ${pn(P.glove)} — 5 ${s.pcs}</span><br><b>${L("Celkem:","Total:","Итого:")}</b> 8 ${L("ks, položek: 3","pcs, 3 items","шт, позиций: 3")}` +
+      kb([...cartButtons(), [{t:s.cartCommit, spot:true}], [{t:s.cartCancel}]]))),
+    L(`<p>V košíku se dá kombinovat: jeden kus ze skeneru, dva z hledání, pět z katalogu. Souhrn je pořád na očích.</p>
+       <ul><li class="n" data-n="1">klepni na <b class="em">✅ Potvrdit výdej</b></li></ul>`,
+      `<p>The cart mixes sources freely: one item from the scanner, two from search, five from the catalog. The summary is always visible.</p>
+       <ul><li class="n" data-n="1">tap <b class="em">✅ Confirm dispense</b></li></ul>`,
+      `<p>В корзине всё смешивается: штука со сканера, две из поиска, пять из каталога. Сводка всегда перед глазами.</p>
+       <ul><li class="n" data-n="1">нажми <b class="em">✅ Оформить расход</b></li></ul>`),
+    null);
+
+  add(2, L("Kam? Do ordinace","Where to? Pick the operatory","Куда? Выбери кабинет"),
+    phone(chip(s.today) + mIn(L("📤 Kam vydat — do ordinace, nebo prodej?","📤 Dispense where — to a room, or as a sale?","📤 Куда списываем — в кабинет или продажа?") +
+      kb([[{t:s.ordinace(1)}],[{t:s.ordinace(2), spot:true}],[{t:s.ordinace(3)}],[{t:s.sale}],[{t:s.back}]]))),
+    L(`<p>Poslední krok: vybrat <b class="em">ordinaci</b>. Každý výdej je tak přiřazen konkrétní místnosti — z toho pak žijí přehledy nákladů po ordinacích.</p>
+       <p class="mut">Asistentka vidí jen ordinace, které jí admin přidělil. Bez omezení = vidí všechny.</p>`,
+      `<p>The last step: pick the <b class="em">operatory</b>. Every dispense is tied to a specific room — this powers the per-room cost reports later.</p>
+       <p class="mut">An assistant only sees the rooms her admin assigned to her. No assignment = she sees all.</p>`,
+      `<p>Последний шаг: выбрать <b class="em">кабинет</b>. Каждый расход привязан к конкретной комнате — на этом потом строятся отчёты по кабинетам.</p>
+       <p class="mut">Ассистентка видит только кабинеты, которые ей выдал админ. Без привязок = видит все.</p>`),
+    null);
+
+  add(2, L("Hotovo — sklad souhlasí","Done — stock is in sync","Готово — склад сходится"),
+    phone(chip(s.today) +
+      mIn(`✅ <span class="title ok">${L("Výdej potvrzen","Dispense confirmed","Расход оформлен")}</span><br>🚪 ${s.roomWord} 2<br><br><span class="sub">1. ${pn(P.impl)} — −1 ${s.pcs}<br>2. ${pn(P.sept)} — −2 ${s.pcs}<br>3. ${pn(P.glove)} — −5 ${s.pcs}</span><br><b>${L("Celkem:","Total:","Итого:")}</b> 8 ${s.pcs} 🎉` +
+        kb(mainMenuKb("assistant")))),
+    L(`<p>Potvrzení s rekapitulací, sklad se snížil <b class="em">okamžitě</b>. Operace je v historii: kdo, co, kolik, do které ordinace a kdy.</p>
+       <p>Náklady se počítají metodou <b class="em">FIFO</b> z reálných nákupních cen — přehledy tak ukazují skutečné peníze, ne odhady.</p>`,
+      `<p>A confirmation with a recap; stock decreased <b class="em">instantly</b>. The operation is in the history: who, what, how much, into which room and when.</p>
+       <p>Costs are computed <b class="em">FIFO</b> from real purchase prices — so reports show actual money, not guesses.</p>`,
+      `<p>Подтверждение со сводкой, остаток уменьшился <b class="em">мгновенно</b>. Операция в истории: кто, что, сколько, в какой кабинет и когда.</p>
+       <p>Себестоимость считается по <b class="em">FIFO</b> из реальных закупочных цен — отчёты показывают настоящие деньги, а не прикидки.</p>`),
+    null);
+
+  /* ---------- CH 3 · Prodej ---------- */
+  add(3, L("Druhý směr výdeje: prodej","The second dispense direction: a sale","Второе направление расхода: продажа"),
+    phone(chip(s.today) + mIn(L("📤 Kam vydat — do ordinace, nebo prodej?","📤 Dispense where — to a room, or as a sale?","📤 Куда списываем — в кабинет или продажа?") +
+      kb([[{t:s.ordinace(1)}],[{t:s.ordinace(2)}],[{t:s.ordinace(3)}],[{t:s.sale, spot:true}],[{t:s.back}]]))),
+    L(`<p>Stejný košík, jiný cíl: místo ordinace zvol <b class="em">💰 Prodej</b> — třeba když si pacient kupuje domácí péči.</p>
+       <p class="mut">Admin prodává vždy; asistentce musí prodej povolit admin v její kartě.</p>`,
+      `<p>Same cart, different destination: instead of a room choose <b class="em">💰 Sale</b> — e.g. when a patient buys home-care products.</p>
+       <p class="mut">Admins can always sell; an assistant needs the permission toggled on in her card.</p>`,
+      `<p>Та же корзина, другая цель: вместо кабинета выбери <b class="em">💰 Продажа</b> — например, пациент покупает средства домашнего ухода.</p>
+       <p class="mut">Админ продаёт всегда; ассистентке продажу должен разрешить админ в её карточке.</p>`),
+    null);
+
+  add(3, L("Cena za kus — u každé položky","Unit price — for every line","Цена за единицу — по каждой позиции"),
+    phone(chip(s.today) +
+      mIn(`💰 <span class="title">${L("Prodej","Sale","Продажа")}</span> · ${L("položka","item","позиция")} 1/2<br><b>${pn(P.sept)}</b> — 2 ${s.pcs}<br><br>${L("Prodejní cena za <b>kus</b> (Kč):","Sale price per <b>unit</b> (Kč):","Цена продажи за <b>единицу</b> (Kč):")}`) +
+      mOut("250") +
+      mIn(`💰 <span class="title">${L("Prodej","Sale","Продажа")}</span> · ${L("položka","item","позиция")} 2/2<br><b>${pn(P.need)}</b> — 1 ${s.pcs}<br><br>${L("Prodejní cena za <b>kus</b> (Kč):","Sale price per <b>unit</b> (Kč):","Цена продажи за <b>единицу</b> (Kč):")}`),
+      {input:`<span class="typed">120</span><span class="caret"></span>`}),
+    L(`<p>Bot projde košík položku po položce a u každé se zeptá na <b class="em">prodejní cenu za kus</b>. Stačí poslat číslo (250 nebo 250.50).</p>`,
+      `<p>The bot walks the cart line by line asking for the <b class="em">sale price per unit</b>. Just send a number (250 or 250.50).</p>`,
+      `<p>Бот проходит корзину по позициям и у каждой спрашивает <b class="em">цену продажи за штуку</b>. Достаточно прислать число (250 или 250.50).</p>`),
+    null);
+
+  add(3, L("Sazba DPH jedním klepnutím","VAT rate in one tap","Ставка НДС одним нажатием"),
+    phone(chip(s.today) + mOut("120") +
+      mIn(L("Sazba DPH?","VAT (DPH) rate?","Ставка НДС (DPH)?") + kb([[{t:"21 %", spot:true},{t:"12 %"},{t:"0 %"}],[{t:s.back}]]))),
+    L(`<p>Na závěr sazba <b class="em">DPH: 21 / 12 / 0 %</b> — české sazby přímo v tlačítkách.</p>`,
+      `<p>Finally the <b class="em">VAT rate: 21 / 12 / 0 %</b> — the Czech rates are right on the buttons.</p>`,
+      `<p>В конце ставка <b class="em">НДС: 21 / 12 / 0 %</b> — чешские ставки прямо на кнопках.</p>`),
+    null);
+
+  add(3, L("Účtenka: tržba, DPH i náklady","The receipt: revenue, VAT and costs","Чек: выручка, НДС и себестоимость"),
+    phone(chip(s.today) +
+      mIn(`✅ <span class="title ok">${L("Prodej vyřízen","Sale completed","Продажа оформлена")}</span><br><br><span class="sub">1. ${pn(P.sept)} — 2 ${s.pcs} × ${money("250,00")}<br>2. ${pn(P.need)} — 1 ${s.pcs} × ${money("120,00")}</span><br><b>${L("Tržba:","Revenue:","Выручка:")}</b> ${money("620,00")} · DPH 21% · 3 ${s.pcs} 🔥` +
+        kb(mainMenuKb("assistant")))),
+    L(`<p>Prodej <b class="em">odepíše zboží ze skladu</b> a do žurnálu zapíše tržbu, DPH i nákladovou cenu (FIFO). Marže je tak vidět v přehledech bez jakéhokoli excelu.</p>`,
+      `<p>A sale <b class="em">writes the goods off stock</b> and journals the revenue, VAT and the FIFO cost. Margin shows up in reports with no spreadsheet involved.</p>`,
+      `<p>Продажа <b class="em">списывает товар со склада</b> и пишет в журнал выручку, НДС и себестоимость (FIFO). Маржа видна в отчётах без всяких экселей.</p>`),
+    null);
+
+  /* ---------- CH 4 · Zásoby ---------- */
+  add(4, L("Zásoby: strom kategorií","Stock: the category tree","Остатки: дерево категорий"),
+    phone(chip(s.today) + mIn(L(`📦 Sklad — vyber kategorii:<br>💰 Celkový sklad — <b>${money("187 420,00")}</b>`,
+        `📦 Stock — pick a category:<br>💰 Total stock value — <b>${money("187 420,00")}</b>`,
+        `📦 Остатки — выбери категорию:<br>💰 Общие остатки — <b>${money("187 420,00")}</b>`) +
+      kb([[{t:L("📂 Anestezie a injekce (74)","📂 Anesthesia & injection (74)","📂 Anestezie a injekce (74)"), spot:true, left:true}],
+          [{t:L("📂 Výplně (212)","📂 Fillings (212)","📂 Výplně (212)"), left:true}],
+          [{t:L("📂 Implantologie (486)","📂 Implantology (486)","📂 Implantologie (486)"), left:true}],
+          [{t:L("📂 Jednorázový materiál (167)","📂 Disposables (167)","📂 Jednorázový materiál (167)"), left:true}],
+          [{t:L("📂 Endodoncie (189)","📂 Endodontics (189)","📂 Endodoncie (189)"), left:true}],
+          [{t:"…"}],
+          [{t:L("🔍 Hledat zboží","🔍 Search products","🔍 Поиск товара")}],[{t:s.back}]]))),
+    L(`<p><b class="em">📦 Zásoby</b> vidí každý. Katalog 1 893 položek je rozdělený do stromu kategorií a podkategorií (Endodoncie → Čepy, Implantologie → Vrtáky…), nahoře souhrnná hodnota skladu.</p>`,
+      `<p><b class="em">📦 Stock</b> is visible to everyone. The 1,893-item catalog is organized in a tree of categories and subcategories (Endodontics → Points, Implantology → Drills…), with the total stock value on top.</p>`,
+      `<p><b class="em">📦 Остатки</b> видят все. Каталог из 1 893 позиций разложен в дерево категорий и подкатегорий (Endodoncie → Čepy, Implantologie → Vrtáky…), сверху — общая стоимость склада. Категории в базе чешские — они общие для всей клиники.</p>`),
+    null);
+
+  add(4, L("Karta zboží: stav + semafor","Product card: stock + traffic light","Карточка товара: остаток + светофор"),
+    phone(chip(s.today) +
+      mIn(`<span class="title">${pn(P.sept)}</span><br><span class="sub">${L("Kód","Code","Артикул")}: <code>SEP-100</code><br>${L("Kategorie","Category","Категория")}: Anestezie a injekce<br>${L("Sklad","In stock","Остаток")}: <b>46</b> ${s.pcs}<br>${L("Stav","Status","Статус")}: 🟢 ${L("vystačí ≈ 34 dní — v klidu","lasts ≈ 34 days — all good","хватит ≈ 34 дн — спокойно")}</span>` +
+        kb([[{t:L("📋 Deník","📋 Journal","📋 Журнал"), spot:true}],[{t:s.back}]]))),
+    L(`<p>Karta ukazuje kód, kategorii, aktuální stav — a hlavně <b class="em">chytrý semafor</b>: bot z tempa spotřeby spočítá, na kolik dní zásoba vystačí.</p>
+       <ul>
+         <li>🟢 <b class="em">v klidu</b> — vystačí déle než dodací lhůta</li>
+         <li>🟡 <b class="em">čas objednat</b> — blíží se hranici</li>
+         <li>🔴 <b class="em">objednat ihned</b> — nevystačí do další dodávky</li>
+       </ul>`,
+      `<p>The card shows the code, category, current stock — and a <b class="em">smart traffic light</b>: from the consumption rate the bot computes how many days the stock will last.</p>
+       <ul>
+         <li>🟢 <b class="em">all good</b> — lasts longer than the lead time</li>
+         <li>🟡 <b class="em">time to order</b> — approaching the limit</li>
+         <li>🔴 <b class="em">order now</b> — won't last until the next delivery</li>
+       </ul>`,
+      `<p>Карточка показывает артикул, категорию, текущий остаток — и главное, <b class="em">умный светофор</b>: по темпу расхода бот считает, на сколько дней хватит запаса.</p>
+       <ul>
+         <li>🟢 <b class="em">спокойно</b> — хватит дольше срока поставки</li>
+         <li>🟡 <b class="em">пора готовить заказ</b> — подходит к границе</li>
+         <li>🔴 <b class="em">срочно заказать</b> — не дотянет до следующей поставки</li>
+       </ul>`),
+    L("📋 Deník na kartě = kompletní historie pohybů této položky, stránkovaná, s detailem každé operace.",
+      "📋 Journal on the card = the item's full movement history, paginated, with per-operation detail.",
+      "📋 Журнал на карточке = полная история движений позиции, постранично, с деталями каждой операции."));
+
+  add(4, L("Hledání: název, SKU, kód, EAN","Search: name, SKU, code, EAN","Поиск: название, SKU, код, EAN"),
+    phone(chip(s.today) +
+      mIn(L(`🔍 <span class="title">Hledání zboží</span><br><span class="sub">Zadej část názvu, SKU nebo kód zboží (čárový kód / kód dodavatele). Slova v libovolném pořadí:</span>`,
+             `🔍 <span class="title">Product search</span><br><span class="sub">Type part of a name, SKU or product code (barcode / supplier code). Words in any order:</span>`,
+             `🔍 <span class="title">Поиск товара</span><br><span class="sub">Введи часть названия, SKU или код товара (штрихкод / код поставщика). Слова можно в любом порядке:</span>`)) +
+      mOut("septo") +
+      mIn(L(`🔍 Nalezeno: <b>3</b> pro «septo»`,`🔍 Found: <b>3</b> for “septo”`,`🔍 Найдено: <b>3</b> по «septo»`) +
+        kb([[{t:`${pn(P.sept)} · 46`, spot:true, left:true}],[{t:`${pn(P.need)} · 310`, left:true}],[{t:L("Septanest bez adrenalinu · 12","Septanest w/o adrenaline · 12","Septanest bez adrenalinu · 12"), left:true}],[{t:s.back}]]))),
+    L(`<p>Hledá se přes všechno najednou: <b class="em">název, SKU, EAN i kód dodavatele</b>. Slova můžou být v libovolném pořadí («gel leptací» najde «Leptací gel 37%»).</p>`,
+      `<p>One search covers everything: <b class="em">name, SKU, EAN and supplier codes</b>. Word order doesn't matter (“gel etch” finds “Etch gel 37%”).</p>`,
+      `<p>Поиск идёт по всему сразу: <b class="em">название, SKU, EAN и коды поставщиков</b>. Порядок слов не важен («gel leptací» найдёт «Leptací gel 37%»).</p>`),
+    null);
+
+  /* ---------- CH 5 · Příjem ---------- */
+  add(5, L("Ruční příjem, když faktura není","Manual receiving when there's no invoice","Приход вручную, когда накладной нет"),
+    phone(chip(s.today) + mIn(`➕ <span class="title">${L("Příjem","Receiving","Приход")}</span><br><span class="sub">${s.cartEmpty}</span>` +
+      kb([[{t:s.cartScan}],[{t:s.cartAdd, spot:true}],[{t:s.cancel1}]]))),
+    L(`<p><b class="em">➕ Příjem</b> (jen admin) je stejný košík jako výdej: přidej zboží skenem nebo z katalogu, u každé položky zadej počet a nákupní cenu.</p>`,
+      `<p><b class="em">➕ Receiving</b> (admin only) is the same cart pattern as dispensing: add items by scan or from the catalog, then enter quantity and purchase price per line.</p>`,
+      `<p><b class="em">➕ Приход</b> (только админ) — та же корзина, что и в расходе: добавь товар сканом или из каталога, по каждой позиции укажи количество и закупочную цену.</p>`),
+    L("Sken při příjmu umí navíc: šarži a expiraci z GS1 kódu uloží rovnou do nové skladové dávky.",
+      "Scanning during receiving does extra work: the GS1 batch and expiry go straight into the new stock batch.",
+      "Скан при приходе умеет больше: партия и срок из GS1-кода уезжают прямо в новую складскую партию."));
+
+  add(5, L("Počet a cena — s pamětí","Quantity and price — with memory","Количество и цена — с памятью"),
+    phone(chip(s.today) +
+      mIn(`➕ <b>${pn(P.glove)}</b><br><br>${L("Kolik přišlo? Tlačítkem 1/2/3/4 nebo číslem:","How many arrived? Tap 1/2/3/4 or type a number:","Сколько пришло? Кнопкой 1/2/3/4 или числом:")}`) +
+      mOut("200") +
+      mIn(L("Zadej nákupní cenu za ks (Kč):","Enter the purchase price per pc (Kč):","Введи цену закупки за шт (Kč):") +
+        kb([[{t:L(`↩️ Jako minule — ${money("3,20")}`,`↩️ Same as last time — ${money("3,20")}`,`↩️ Как в прошлый раз — ${money("3,20")}`), spot:true}],[{t:s.back}]]))),
+    L(`<p>Bot si <b class="em">pamatuje poslední nákupní cenu</b> — potvrzení je jedno klepnutí. Nová cena = prostě napiš číslo.</p>`,
+      `<p>The bot <b class="em">remembers the last purchase price</b> — confirming it is a single tap. New price = just type the number.</p>`,
+      `<p>Бот <b class="em">помнит последнюю закупочную цену</b> — подтвердить можно одним нажатием. Новая цена = просто напиши число.</p>`),
+    null);
+
+  add(5, L("Příjem zpracován","Receiving completed","Приход оформлен"),
+    phone(chip(s.today) +
+      mIn(`✅ <span class="title ok">${L("Příjem zpracován","Receiving completed","Приход оформлен")}</span><br><br><span class="sub">1. <b>${pn(P.glove)}</b><br>&nbsp;&nbsp;&nbsp;+200 × ${money("3,20")}<br>2. <b>${pn(P.etch)}</b><br>&nbsp;&nbsp;&nbsp;+10 × ${money("185,00")}</span>` +
+        kb(mainMenuKb("admin")))),
+    L(`<p>Každý příjem založí <b class="em">skladovou dávku</b> s cenou — z těch se pak při výdeji odečítá metodou FIFO. Dlouhý příjem se v potvrzení elegantně sbalí do citace.</p>`,
+      `<p>Every receiving creates a <b class="em">stock batch</b> with its price — dispensing then consumes batches FIFO. Long receipts collapse neatly into a quote in the confirmation.</p>`,
+      `<p>Каждый приход создаёт <b class="em">складскую партию</b> с ценой — при расходе они списываются по FIFO. Длинный приход в подтверждении аккуратно сворачивается в цитату.</p>`),
+    null);
+
+  /* ---------- CH 6 · Faktury ---------- */
+  add(6, L("Hlavní trik: přijmout celou fakturu","The main trick: receive a whole invoice","Главный трюк: принять накладную целиком"),
+    adminMenuScreen("inv"),
+    L(`<p>Ruční příjem 30 položek je otrava. Proto bot umí <b class="em">přijmout celou fakturu najednou</b> — z fotky nebo z e-mailu.</p>
+       <ul><li class="n" data-n="1">Administrace → <b class="em">📥 Příjem faktur</b></li></ul>`,
+      `<p>Hand-typing a 30-line delivery is a chore. So the bot can <b class="em">receive an entire invoice at once</b> — from a photo or from e-mail.</p>
+       <ul><li class="n" data-n="1">Admin → <b class="em">📥 Incoming invoices</b></li></ul>`,
+      `<p>Вручную приходовать 30 позиций — мучение. Поэтому бот умеет <b class="em">принять накладную целиком</b> — с фото или с почты.</p>
+       <ul><li class="n" data-n="1">Админка → <b class="em">📥 Накладные на приём</b></li></ul>`),
+    L("Mimochodem, tohle je celá administrace: požadavky, faktury, přehledy, odpisy, historie, zboží, servisní nástroje a nápověda.",
+      "By the way, this is the whole admin panel: requests, invoices, reports, write-offs, history, products, maintenance and help.",
+      "Кстати, это вся админка целиком: заявки, накладные, отчёты, списание, история, товары, служебное и справка."));
+
+  add(6, L("Vyfoť fakturu — bot ji přečte","Snap the invoice — the bot reads it","Сфоткай накладную — бот прочитает"),
+    phone(chip(s.today) +
+      mIn(L(`📸 <span class="title">Příjem faktury podle fota</span><br><span class="sub">Pošli foto faktury — zblízka, rovně a při dobrém světle…</span>`,
+             `📸 <span class="title">Receive an invoice from a photo</span><br><span class="sub">Send a photo of the invoice — close-up, straight, in good light…</span>`,
+             `📸 <span class="title">Приём накладной по фото</span><br><span class="sub">Пришли фото накладной — крупно, ровно, при хорошем свете…</span>`)) +
+      `<div class="msg out" style="padding:5px"><div style="background:#f4f1ea;border-radius:8px;padding:10px 11px;color:#333;transform:rotate(-1.2deg);box-shadow:0 2px 8px rgba(0,0,0,.35)">
+        <div style="font-size:.66em;font-weight:800;color:#222">TOPDENTAL ČESKO s.r.o.</div>
+        <div style="font-size:.54em;color:#777;margin:1px 0 6px">Faktura – daňový doklad č. 2026-0493</div>
+        <div style="height:4px;border-radius:2px;background:#d7d2c6;margin:3.5px 0;width:92%"></div>
+        <div style="height:4px;border-radius:2px;background:#d7d2c6;margin:3.5px 0;width:78%"></div>
+        <div style="height:4px;border-radius:2px;background:#d7d2c6;margin:3.5px 0;width:85%"></div>
+        <div style="height:4px;border-radius:2px;background:#d7d2c6;margin:3.5px 0;width:88%"></div>
+        <div style="height:4px;border-radius:2px;background:#d7d2c6;margin:3.5px 0;width:65%"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:7px"><span style="font-size:.57em;font-weight:800;color:#1a4f8b;border:1.5px solid #1a4f8b;border-radius:3px;padding:1px 5px;transform:rotate(2deg)">10 991,11 Kč</span></div>
+      </div><span class="t">9:41 <span class="tick">✓✓</span></span><span class="react">👍</span></div>` +
+      mIn(`🔎 ${L("Rozpoznávám fakturu…","Reading the invoice…","Распознаю накладную…")}`)),
+    L(`<p>Pošli fotku — bot na ni dá <b class="em">👍</b> a pustí OCR. Rozpozná dodavatele, číslo dokladu i jednotlivé řádky.</p>
+       <p class="mut">📌 Rada z praxe: jeden rovný list, zblízka, bez dalších papírů v záběru.</p>`,
+      `<p>Send a photo — the bot reacts <b class="em">👍</b> and runs OCR. It detects the supplier, the document number and the individual lines.</p>
+       <p class="mut">📌 Field tip: one flat sheet, close up, no other papers in the frame.</p>`,
+      `<p>Пришли фото — бот поставит на него <b class="em">👍</b> и запустит OCR. Распознает поставщика, номер документа и каждую строку.</p>
+       <p class="mut">📌 Совет из практики: один ровный лист, крупно, без других бумаг в кадре.</p>`),
+    L("Umí dodavatele: Nora · Dentamed · PALTOP · Topdental · Straumann · Medplus · lékárna Magistraliter — plus obecný režim pro ostatní.",
+      "Supplier parsers: Nora · Dentamed · PALTOP · Topdental · Straumann · Medplus · Magistraliter pharmacy — plus a generic mode for the rest.",
+      "Знает поставщиков: Nora · Dentamed · PALTOP · Topdental · Straumann · Medplus · аптека Magistraliter — плюс общий режим для остальных."));
+
+  add(6, L("Rozpoznáno: 6 položek, 6 spárováno","Recognized: 6 lines, 6 matched","Распознано: 6 позиций, 6 сопоставлено"),
+    phone(chip(s.today) +
+      mIn(`✅ <span class="title ok">${L("Rozpoznáno z fota","Recognized from photo","Распознано с фото")}</span><br><br>🧾 Topdental Česko s.r.o. · ${L("č.","no.","№")}2026-0493<br>📦 ${L("Položek","Items","Позиций")}: <b>6</b> · ✅ ${L("spárováno","matched","сопоставлено")}: <b>6</b><br><br>${L("Zkontroluj a přijmi 👇","Check and receive 👇","Проверь и прими 👇")}` +
+        kb([[{t:L("📄 Otevřít fakturu","📄 Open invoice","📄 Открыть накладную"), spot:true}]]))),
+    L(`<p>Každý řádek faktury bot <b class="em">sám spáruje s kartou zboží</b> — podle zapamatovaných kódů dodavatele, EAN nebo fragmentu kódu. Topdental tu má 6 z 6.</p>
+       <p>Nespárované řádky nezapadnou: jde je dopárovat ručně jedním výběrem — a bot si volbu <b class="em">zapamatuje navždy</b>.</p>`,
+      `<p>The bot <b class="em">auto-matches every invoice line to a product card</b> — via remembered supplier codes, EAN or code fragments. Topdental scores 6 of 6 here.</p>
+       <p>Unmatched lines don't get lost: match them manually once — and the bot <b class="em">remembers the pairing forever</b>.</p>`,
+      `<p>Каждую строку накладной бот <b class="em">сам сопоставляет с карточкой товара</b> — по запомненным кодам поставщика, EAN или фрагменту кода. У Topdental здесь 6 из 6.</p>
+       <p>Несопоставленные строки не теряются: их можно домапить вручную одним выбором — и бот <b class="em">запомнит связку навсегда</b>.</p>`),
+    null);
+
+  add(6, L("Přehled faktury před příjmem","Invoice overview before receiving","Обзор накладной перед приёмкой"),
+    phone(chip(s.today) +
+      mIn(`🧾 <span class="title">Topdental Česko s.r.o.</span><br><span class="sub">${L("č.","no.","№")}2026-0493 · 📅 21.07.2026</span><br><br>📦 ${L("Položek","Items","Позиций")}: <b>6</b><br>✅ ${L("Spárováno","Matched","Сопоставлено")}: <b>6</b> ${L("z","of","из")} 6<br>👁 ${L("Zkontrolováno","Reviewed","Сверено")}: <b>0</b> ${L("z","of","из")} 6<br><br>💰 ${L("Celkem netto","Net total","Итого нетто")}: <b>${money("10 991,11")}</b>` +
+        kb([[{t:L("▶️ Kontrolovat po položkách (0/6)","▶️ Review line by line (0/6)","▶️ Сверять по позициям (0/6)"), spot:true}],
+            [{t:L("✅ Potvrdit vše spárované","✅ Confirm all matched","✅ Подтвердить все сопоставленные")}],
+            [{t:L("🔄 Znovu spárovat nenalezené","🔄 Re-match unmatched","🔄 Пересопоставить ненайденные")}],
+            [{t:L("📦 Přijmout (vytvořit příjem)","📦 Receive (create stock-in)","📦 Принять (создать приход)")}],
+            [{t:L("❌ Zrušit fakturu","❌ Cancel invoice","❌ Отменить накладную")}]]))),
+    L(`<p>Před příjmem je vidět celek: počty položek, spárování, kontrola a <b class="em">netto součet v Kč</b>. Spěcháš? «✅ Potvrdit vše spárované» a rovnou «📦 Přijmout».</p>
+       <p>Pečlivost? <b class="em">▶️ Kontrola po položkách</b> — další krok.</p>`,
+      `<p>Before receiving you see the whole picture: line counts, matching, review progress and the <b class="em">net total in Kč</b>. In a hurry? «✅ Confirm all matched», then «📦 Receive».</p>
+       <p>Being thorough? <b class="em">▶️ Review line by line</b> — next step.</p>`,
+      `<p>Перед приёмкой видна картина целиком: число позиций, сопоставление, сверка и <b class="em">итог нетто в Kč</b>. Спешишь? «✅ Подтвердить все сопоставленные» и сразу «📦 Принять».</p>
+       <p>Хочешь тщательно? <b class="em">▶️ Сверять по позициям</b> — следующий шаг.</p>`),
+    null);
+
+  add(6, L("Kontrola položky: vše po ruce","Line review: everything at hand","Сверка позиции: всё под рукой"),
+    phone(chip(s.today) +
+      mIn(`📥 <span class="title">Topdental Česko s.r.o.</span><br><span class="sub">${L("položka","line","позиция")} <b>1</b> ${L("z","of","из")} 6 · ${L("č.","no.","№")}2026-0493</span><br><br>✅ <b>${pn(P.sept)}</b><div class="bq">📄 ${L("na faktuře","on the invoice","в накладной")}: SEPTANEST 4% 1:100.000 50×1,7ml<br><span style="color:#8fa1bb">${L("spárováno podle kódu","matched by code","сопоставлено по коду")} 84961</span></div>📦 <b>2 ${s.pcs}</b> × ${money("1 260,00")} · DPH 12%<br>🏷 ${L("šarže","batch","партия")} <code>A23F41</code> · ${L("do","until","до")} 11/2027` +
+        kb([[{t:L("✅ Jako na faktuře (2)","✅ As invoiced (2)","✅ Как в накладной (2)"), spot:true}],
+            [{t:L("✏️ Množství","✏️ Qty","✏️ Кол-во")},{t:L("🚫 Nedorazilo","🚫 Not delivered","🚫 Не пришло")}],
+            [{t:L("🔗 Změnit kartu","🔗 Change card","🔗 Сменить карточку")}],
+            [{t:L("⬅️ Předch.","⬅️ Prev","⬅️ Пред")},{t:L("Další ➡️","Next ➡️","След ➡️")}],
+            [{t:L("📋 Na fakturu","📋 Back to invoice","📋 К накладной")}]]))),
+    L(`<p>U každého řádku: karta ↔ přesný text z faktury, počet × cena, DPH, <b class="em">šarže a expirace</b>. Jedním klepnutím:</p>
+       <ul>
+         <li><b class="em">✅ Jako na faktuře</b> — sedí, ber</li>
+         <li><b class="em">✏️ Množství</b> — přišlo méně/více</li>
+         <li><b class="em">🚫 Nedorazilo</b> — řádek se nepřijme</li>
+         <li><b class="em">🔗 Změnit kartu</b> — oprava spárování</li>
+       </ul>`,
+      `<p>For every line: the card ↔ the exact invoice text, qty × price, VAT, <b class="em">batch and expiry</b>. One tap for:</p>
+       <ul>
+         <li><b class="em">✅ As invoiced</b> — it matches, take it</li>
+         <li><b class="em">✏️ Qty</b> — less/more arrived</li>
+         <li><b class="em">🚫 Not delivered</b> — line won't be received</li>
+         <li><b class="em">🔗 Change card</b> — fix the pairing</li>
+       </ul>`,
+      `<p>По каждой строке: карточка ↔ точный текст из накладной, кол-во × цена, DPH, <b class="em">партия и срок</b>. Одним нажатием:</p>
+       <ul>
+         <li><b class="em">✅ Как в накладной</b> — сходится, берём</li>
+         <li><b class="em">✏️ Кол-во</b> — пришло меньше/больше</li>
+         <li><b class="em">🚫 Не пришло</b> — строка не приходуется</li>
+         <li><b class="em">🔗 Сменить карточку</b> — поправить сопоставление</li>
+       </ul>`),
+    null);
+
+  add(6, L("Minutová práce: faktura je na skladě","A minute later: the invoice is in stock","Минута работы: накладная на складе"),
+    phone(chip(s.today) +
+      mIn(`📦 <span class="title ok">${L("Příjem vytvořen","Stock-in created","Приход создан")}</span><br><br>${L("Vytvořeno šarží","Batches created","Партий создано")}: <b>6</b> ${L("z","of","из")} 6 🎉` +
+        kb([[{t:L("⬅️ Na seznam","⬅️ Back to the list","⬅️ К списку")}],[{t:s.toMenu}]]))),
+    L(`<p>Hotovo: šest skladových dávek s cenami, šaržemi a expiracemi. Faktura je archivovaná a dohledatelná.</p>
+       <p><b class="em">✉️ Druhá cesta — e-mail:</b> bot každé 2 minuty čte schránku <b class="em">faktury@tkalych.cz</b>. PDF od dodavatele se samo změní v koncept a adminům přijde upozornění. Dodavatelům prostě dáš tuhle adresu.</p>`,
+      `<p>Done: six stock batches with prices, lots and expiry dates. The invoice is archived and searchable.</p>
+       <p><b class="em">✉️ The second route — e-mail:</b> every 2 minutes the bot reads <b class="em">faktury@tkalych.cz</b>. A supplier's PDF turns into a draft on its own and admins get a notification. Just hand suppliers that address.</p>`,
+      `<p>Готово: шесть складских партий с ценами, партиями и сроками. Накладная в архиве, всё дохо­димо поиском.</p>
+       <p><b class="em">✉️ Второй путь — почта:</b> бот каждые 2 минуты читает ящик <b class="em">faktury@tkalych.cz</b>. PDF от поставщика сам превращается в черновик, админам приходит уведомление. Просто дай поставщикам этот адрес.</p>`),
+    null);
+
+  /* ---------- CH 7 · Pořádek ---------- */
+  add(7, L("Inventura: zavést skutečnost","Stocktake: enter reality","Инвентаризация: завести факт"),
+    phone(chip(s.today) +
+      mIn(`📋 <b>${pn(P.glove)}</b><br>${L("Celkem v databázi","In the database","Всего по базе")}: 0 ${s.pcs}<br>${L("Na skladě nyní","On hand now","На складе сейчас")}: <b>0</b> ${s.pcs}<br><br>${L("Zadej skutečný stav na skladě (ks):","Enter the actual on-shelf quantity (pcs):","Введи фактический остаток на складе (шт):")}`) +
+      mOut("200") +
+      mIn(`✅ ${pn(P.glove)}: 0 → 200 (+200) · ${L("nákup","cost","закуп")} ${money("3,20")}`)),
+    L(`<p><b class="em">Inventura</b> (Administrace → Servisní) nepřičítá — <b class="em">nastavuje skutečný stav</b>: vyber zboží, napiš, kolik reálně leží na polici. Bot ukáže rozdíl ±.</p>
+       <p class="mut">Po prvním spuštění je to krok č. 1: katalog vznikl z faktur, počáteční stavy se zavádějí právě inventurou.</p>`,
+      `<p><b class="em">Stocktake</b> (Admin → Maintenance) doesn't add — it <b class="em">sets the actual state</b>: pick an item, type what's really on the shelf. The bot shows the ± difference.</p>
+       <p class="mut">Right after launch this is step one: the catalog came from invoices, opening balances are entered via stocktake.</p>`,
+      `<p><b class="em">Инвентаризация</b> (Админка → Служебное) не прибавляет — она <b class="em">задаёт фактический остаток</b>: выбери товар, напиши, сколько реально лежит на полке. Бот покажет разницу ±.</p>
+       <p class="mut">После запуска это шаг №1: каталог собран из накладных, начальные остатки заводятся именно инвентаризацией.</p>`),
+    null);
+
+  add(7, L("Odpis: zkažené, ztracené, darované","Write-off: spoiled, lost, gifted","Списание: брак, потери, подарки"),
+    phone(chip(s.today) +
+      mIn(`🗑 <b>${pn(P.gutta)}</b> — 2 ${s.pcs}<br><br>${L("Vyber důvod odpisu:","Pick the write-off reason:","Выбери причину списания:")}` +
+        kb([[{t:L("❌ Vada","❌ Defect","❌ Брак"), spot:true}],[{t:L("🎁 Dárek","🎁 Gift","🎁 Подарок")}],[{t:L("📦 Poškozeno při dopravě","📦 Damaged in transit","📦 Повреждено при доставке")}],[{t:L("✏️ Jiné (s komentářem)","✏️ Other (with a comment)","✏️ Другое (с комментарием)")}],[{t:s.back}]]))),
+    L(`<p><b class="em">🗑 Odpis</b> je pro zboží, které se nevydalo ani neprodalo: prošlá šarže, rozbité balení, dárek pacientovi. Vždy s důvodem — «jiné» s volným komentářem.</p>
+       <p class="mut">Odpis snižuje sklad, ale nejde do tržeb (cena 0) — statistiky zůstávají čisté.</p>`,
+      `<p><b class="em">🗑 Write-off</b> is for goods neither dispensed nor sold: an expired batch, a broken pack, a patient gift. Always with a reason — “other” takes a free comment.</p>
+       <p class="mut">A write-off lowers stock but never touches revenue (price 0) — the stats stay clean.</p>`,
+      `<p><b class="em">🗑 Списание</b> — для товара, который не выдан и не продан: просроченная партия, разбитая упаковка, подарок пациенту. Всегда с причиной — «другое» с комментарием.</p>
+       <p class="mut">Списание уменьшает склад, но не попадает в выручку (цена 0) — статистика остаётся чистой.</p>`),
+    null);
+
+  add(7, L("Co objednat? Bot to ví","What to order? The bot knows","Что заказать? Бот знает"),
+    phone(chip(s.today) +
+      mIn(`📝 <span class="title">${L("Požadavky","Requests","Заявки")}</span>` +
+        kb([[{t:L("🔴 Objednat ihned (3)","🔴 Order now (3)","🔴 Срочно заказать (3)"), left:true}],
+            [{t:L("🟡 Brzy dojde (5)","🟡 Running low (5)","🟡 Скоро понадобится (5)"), left:true}],
+            [{t:L("🐢 Ležáky (12)","🐢 Slow movers (12)","🐢 Залежавшиеся (12)"), left:true}],
+            [{t:L("📝 Sestavit požadavek","📝 Build a request","📝 Собрать заявку"), spot:true}],
+            [{t:s.back}]]))),
+    L(`<p>Semafor z karet zboží se sčítá do <b class="em">nákupních podnětů</b>: co objednat ihned, co brzy dojde, co naopak leží bez pohybu.</p>
+       <p>Z červené/žluté skupiny jde jedním klepnutím <b class="em">sestavit požadavek</b> — a po dodání ho tlačítkem «📥 Naskladnit» proměnit v příjem.</p>`,
+      `<p>The per-item traffic lights roll up into <b class="em">purchasing signals</b>: what to order now, what's running low, what just sits there.</p>
+       <p>From the red/yellow group one tap <b class="em">builds a purchase request</b> — and after delivery the «📥 Receive to stock» button turns it into a stock-in.</p>`,
+      `<p>Светофоры карточек складываются в <b class="em">подсказки по закупкам</b>: что заказать срочно, что скоро кончится, а что лежит без движения.</p>
+       <p>Из красной/жёлтой группы одним нажатием <b class="em">собирается заявка</b> — а после поставки кнопка «📥 Оприходовать на склад» превращает её в приход.</p>`),
+    null);
+
+  /* ---------- CH 8 · Kontrola ---------- */
+  add(8, L("Historie všech operací","History of every operation","История всех операций"),
+    phone(chip(s.today) +
+      mIn(`📜 <span class="title">${L("Historie příjmů","Receiving history","История приходов")}</span><br><span class="sub">${L("Celkem operací","Total operations","Всего операций")}: 24</span>` +
+        kb([[{t:L("📅 Dnes","📅 Today","📅 Сегодня")},{t:L("📅 Týden","📅 Week","📅 Неделя"), sel:true}],
+            [{t:L("🗓 Aktuální měsíc","🗓 Current month","🗓 Текущий месяц")},{t:L("🗓 Období","🗓 Range","🗓 Период")}],
+            [{t:`21.07 · Topdental · 6 ${L("pol.","lines","поз.")} · ${money("10 991,11")}`, spot:true, left:true}],
+            [{t:`18.07 · ${L("ruční příjem","manual stock-in","ручной приход")} · 2 ${L("pol.","lines","поз.")}`, left:true}],
+            [{t:s.back}]]))),
+    L(`<p>Administrace → <b class="em">📜 Historie</b>: příjmy a prodeje s filtrem podle období. Každou operaci lze otevřít do detailu.</p>
+       <p>K tomu dvě další osy: historie <b class="em">položky</b> (deník na kartě zboží) a historie <b class="em">zaměstnance</b> (jeho karta) — všechny tři ukazují tytéž pohyby.</p>`,
+      `<p>Admin → <b class="em">📜 History</b>: receipts and sales filtered by period. Any operation opens into a detail view.</p>
+       <p>Two more axes exist: per-<b class="em">item</b> history (the journal on a product card) and per-<b class="em">employee</b> history (their card) — all three show the same movements.</p>`,
+      `<p>Админка → <b class="em">📜 История</b>: приходы и продажи с фильтром по периоду. Любая операция открывается в детали.</p>
+       <p>Есть ещё две оси: история <b class="em">товара</b> (журнал в карточке) и история <b class="em">сотрудника</b> (его карточка) — все три показывают одни и те же движения.</p>`),
+    null);
+
+  add(8, L("Spletl ses? Operaci lze stornovat","Made a mistake? Undo the operation","Ошибся? Операцию можно отменить"),
+    phone(chip(s.today) +
+      mIn(`<span class="title">${L("Příjem","Stock-in","Приход")} · 21.07.2026 14:32</span><br><span class="sub">Topdental Česko s.r.o. · ${L("č.","no.","№")}2026-0493<br>6 ${L("položek","lines","позиций")} · ${money("10 991,11")} · 👤 Ivan</span>` +
+        kb([[{t:L("↩️ Stornovat operaci","↩️ Undo operation","↩️ Отменить операцию"), spot:true}],[{t:L("⬅️ Na historii","⬅️ Back to history","⬅️ К истории")}]])) +
+      mIn(`${L("Opravdu stornovat?","Really undo?","Точно отменить?")}` + kb([[{t:L("✅ Ano, stornovat","✅ Yes, undo","✅ Да, отменить")}],[{t:L("⬅️ Zrušit","⬅️ Cancel","⬅️ Отмена")}]]))),
+    L(`<p>Chybně zadaný příjem nebo výdej se nemaže ručně — klepneš na <b class="em">↩️ Stornovat</b> a bot celou operaci vrátí: <b class="em">stav skladu se obnoví</b> a storno zůstane v žurnálu.</p>`,
+      `<p>A mistaken stock-in or dispense isn't fixed by hand — tap <b class="em">↩️ Undo</b> and the bot reverses the whole operation: <b class="em">stock is restored</b> and the reversal stays in the journal.</p>`,
+      `<p>Ошибочный приход или расход не правится руками — жмёшь <b class="em">↩️ Отменить</b>, и бот откатывает операцию целиком: <b class="em">остаток возвращается</b>, а сторно остаётся в журнале.</p>`),
+    null);
+
+  add(8, L("Karta zaměstnance","The employee card","Карточка сотрудника"),
+    phone(chip(s.today) +
+      mIn(`👤 <span class="title">Jana N.</span><br><span class="sub">🦷 ${L("Asistent/ka","Assistant","Ассистент")} · id <code>123456789</code></span><br><br>🚪 <b>${L("Ordinace","Rooms","Кабинеты")}:</b> ${L("Ordinace 2, Ordinace 3","Room 2, Room 3","Кабинет 2, Кабинет 3")}<br><br>🕘 <b>${L("Poslední pohyby","Recent movements","Последние движения")}</b> · ${L("celkem","total","всего")} 128<div class="rows"><div class="row"><em>−2 ${pn(P.sept)}</em><b>🚪 2</b></div><div class="row"><em>−1 ${pn(P.impl)}</em><b>🚪 2</b></div><div class="row dim"><em>${L("dnes 14:32 · včera 09:15…","today 14:32 · yesterday 09:15…","сегодня 14:32 · вчера 09:15…")}</em><b></b></div></div>` +
+        kb([[{t:L("🚪 Ordinace","🚪 Rooms","🚪 Кабинеты"), spot:true}],[{t:L("🕘 Celá historie","🕘 Full history","🕘 Вся история")}],[{t:L("🔧 Role","🔧 Role","🔧 Роль")}],[{t:L("🗑 Smazat uživatele","🗑 Delete user","🗑 Удалить пользователя")}],[{t:s.back}]]))),
+    L(`<p>Administrace → Servisní → <b class="em">👥 Uživatelé</b> → klepnutí na osobu. Karta ukazuje roli, přidělené ordinace a poslední pohyby daného člověka.</p>
+       <p>Nového zaměstnance přidáš přes Telegram ID — bot vygeneruje <b class="em">pozvací odkaz</b>, který mu přepošleš.</p>`,
+      `<p>Admin → Maintenance → <b class="em">👥 Users</b> → tap a person. The card shows their role, assigned rooms and recent movements.</p>
+       <p>A new employee is added by Telegram ID — the bot generates an <b class="em">invite link</b> you forward to them.</p>`,
+      `<p>Админка → Служебное → <b class="em">👥 Пользователи</b> → тап по человеку. Карточка показывает роль, привязанные кабинеты и последние движения сотрудника.</p>
+       <p>Нового добавляешь по Telegram ID — бот сгенерирует <b class="em">инвайт-ссылку</b>, которую пересылаешь ему.</p>`),
+    null);
+
+  add(8, L("Ordinace a právo prodeje","Rooms and the selling permission","Кабинеты и право продажи"),
+    phone(chip(s.today) +
+      mIn(`🚪 ${L("Ordinace pro","Rooms for","Кабинеты для")} <b>Jana N.</b><br><span class="sub">${L("✅ označené jsou dostupné při výdeji.<br>«Všechny ordinace» = bez omezení.","✅ checked ones are available at dispense.<br>“All rooms” = no restriction.","✅ отмеченные доступны при расходе.<br>«Все кабинеты» = без ограничения.")}</span>` +
+        kb([[{t:L("Všechny ordinace","All rooms","Все кабинеты")}],
+            [{t:L("✅ 🚪 Ordinace 2","✅ 🚪 Room 2","✅ 🚪 Кабинет 2")}],[{t:L("✅ 🚪 Ordinace 3","✅ 🚪 Room 3","✅ 🚪 Кабинет 3")}],[{t:L("⬜ 🚪 Ordinace 4","⬜ 🚪 Room 4","⬜ 🚪 Кабинет 4")}],
+            [{t:L("⬜ 💰 Povolit prodej","⬜ 💰 Allow selling","⬜ 💰 Разрешить продажу"), spot:true}],[{t:s.back}]]))),
+    L(`<p>Tady admin řídí dvě věci najednou:</p>
+       <ul>
+         <li><b class="em">🚪 Ordinace</b> — zaškrtnuté místnosti jsou jediné, kam smí zaměstnanec vydávat</li>
+         <li><b class="em">💰 Povolit prodej</b> — přepínač zpřístupní směr «Prodej» při výdeji</li>
+       </ul>`,
+      `<p>Here the admin controls two things at once:</p>
+       <ul>
+         <li><b class="em">🚪 Rooms</b> — the checked rooms are the only ones the employee may dispense into</li>
+         <li><b class="em">💰 Allow selling</b> — the toggle unlocks the “Sale” direction at dispense</li>
+       </ul>`,
+      `<p>Здесь админ управляет двумя вещами сразу:</p>
+       <ul>
+         <li><b class="em">🚪 Кабинеты</b> — отмеченные комнаты — единственные, куда сотрудник может списывать</li>
+         <li><b class="em">💰 Разрешить продажу</b> — тумблер открывает направление «Продажа» при расходе</li>
+       </ul>`),
+    null);
+
+  add(8, L("Přehledy: náklady po ordinacích","Reports: costs per operatory","Отчёты: расход по кабинетам"),
+    phone(chip(s.today) +
+      mIn(`🚪 <span class="title">${L("Výdej podle ordinací","Dispense by room","Расход по кабинетам")}</span><br><span class="sub">📅 01.07 — 28.07.2026</span><div class="rows"><div class="row"><em>${s.roomWord} 1</em><b>84 ${s.pcs} · ${money("6 420,00")}</b></div><div class="row"><em>${s.roomWord} 2</em><b>112 ${s.pcs} · ${money("8 930,50")}</b></div><div class="row"><em>${s.roomWord} 3</em><b>95 ${s.pcs} · ${money("6 380,00")}</b></div><div class="row dim"><em><b>${L("Celkem","Total","Итого")}</b></em><b>291 ${s.pcs} · ${money("21 730,50")}</b></div></div>` +
+        kb([[{t:L("📅 Dnes","📅 Today","📅 Сегодня")},{t:L("📅 Týden","📅 Week","📅 Неделя")},{t:L("🗓 Měsíc","🗓 Month","🗓 Месяц"), sel:true}],[{t:L("⬅️ Do administrace","⬅️ Back to admin","⬅️ В админку")}]]))),
+    L(`<p>Administrace → <b class="em">📊 Přehledy</b>: výdej podle ordinací, příjem a prodeje za období. Částky v Kč, náklady z FIFO — <b class="em">skutečná spotřeba každé ordinace</b>, ne odhad.</p>`,
+      `<p>Admin → <b class="em">📊 Reports</b>: dispense by room, receipts and sales for a period. Amounts in Kč, costs from FIFO — <b class="em">each operatory's real consumption</b>, not an estimate.</p>`,
+      `<p>Админка → <b class="em">📊 Отчёты</b>: расход по кабинетам, приход и продажи за период. Суммы в Kč, себестоимость по FIFO — <b class="em">реальное потребление каждого кабинета</b>, а не оценка.</p>`),
+    null);
+
+  /* ---------- CH 9 · Shrnutí ---------- */
+  add(9, L("Nápověda přímo v botu — i s videem","Help right in the bot — with videos","Справка прямо в боте — с видео"),
+    phone(chip(s.today) +
+      mIn(`❓ <span class="title">${L("Nápověda","Help","Справка")}</span><br><span class="sub">${L("Krátké návody ke každé úloze. Vyber téma:","Short guides for every task. Pick a topic:","Короткие инструкции по каждой задаче. Выбери раздел:")}</span>` +
+        kb([[{t:L("Jak přidat zaměstnance","How to add an employee","Как добавить сотрудника"), left:true}],
+            [{t:L("Role: admin a asistent/ka","Roles: admin & assistant","Роли: админ и ассистент"), left:true}],
+            [{t:L("Příjem faktury z fota","Receiving an invoice from a photo","Приёмка накладной по фото"), left:true}],
+            [{t:L("Výdej do ordinace (3 způsoby)","Dispensing to a room (3 ways)","Расход в кабинет (3 способа)"), left:true}],
+            [{t:L("Prodej: cena a DPH","Sale: price & VAT","Продажа: цена и НДС"), left:true}],
+            [{t:L("Inventura (zavést stavy)","Stocktake (opening balances)","Инвентаризация (завести остатки)"), left:true}],
+            [{t:L("Skener: jak používat","Scanner: how to use","Сканер: как пользоваться"), left:true}],
+            [{t:"…"}]]))),
+    L(`<p>Vše, co jste právě viděli, je popsané i <b class="em">uvnitř bota</b>: Administrace → ❓ Nápověda. Ke každému tématu jde připnout <b class="em">video</b> (záznam obrazovky) — nový admin se učí sám.</p>`,
+      `<p>Everything you just saw is also documented <b class="em">inside the bot</b>: Admin → ❓ Help. Each topic can carry an attached <b class="em">video</b> (screen recording) — a new admin self-onboards.</p>`,
+      `<p>Всё, что вы только что видели, описано и <b class="em">внутри бота</b>: Админка → ❓ Справка. К каждому разделу можно прикрепить <b class="em">видео</b> (запись экрана) — новый админ учится сам.</p>`),
+    null);
+
+  add(9, L("Kdo dělá co — a kde začít","Who does what — and where to start","Кто что делает — и с чего начать"),
+    homeScreen("admin"),
+    L(`<table class="roles">
+        <tr><th></th><th>🦷 Asistent/ka</th><th>👑 Admin</th></tr>
+        <tr><td>📦 Zásoby a hledání</td><td>✅</td><td>✅</td></tr>
+        <tr><td>📤 Výdej do ordinace</td><td>✅</td><td>✅</td></tr>
+        <tr><td>💰 Prodej</td><td>🔑 se svolením</td><td>✅</td></tr>
+        <tr><td>➕ Příjem & 📥 faktury</td><td>—</td><td>✅</td></tr>
+        <tr><td>📋 Inventura & 🗑 odpis</td><td>—</td><td>✅</td></tr>
+        <tr><td>📊 Přehledy & 📜 historie</td><td>—</td><td>✅</td></tr>
+        <tr><td>👥 Uživatelé & role</td><td>—</td><td>✅</td></tr>
+       </table>`,
+      `<table class="roles">
+        <tr><th></th><th>🦷 Assistant</th><th>👑 Admin</th></tr>
+        <tr><td>📦 Stock & search</td><td>✅</td><td>✅</td></tr>
+        <tr><td>📤 Dispense to rooms</td><td>✅</td><td>✅</td></tr>
+        <tr><td>💰 Sale</td><td>🔑 if allowed</td><td>✅</td></tr>
+        <tr><td>➕ Receiving & 📥 invoices</td><td>—</td><td>✅</td></tr>
+        <tr><td>📋 Stocktake & 🗑 write-off</td><td>—</td><td>✅</td></tr>
+        <tr><td>📊 Reports & 📜 history</td><td>—</td><td>✅</td></tr>
+        <tr><td>👥 Users & roles</td><td>—</td><td>✅</td></tr>
+       </table>`,
+      `<table class="roles">
+        <tr><th></th><th>🦷 Ассистент</th><th>👑 Админ</th></tr>
+        <tr><td>📦 Остатки и поиск</td><td>✅</td><td>✅</td></tr>
+        <tr><td>📤 Расход в кабинет</td><td>✅</td><td>✅</td></tr>
+        <tr><td>💰 Продажа</td><td>🔑 по разрешению</td><td>✅</td></tr>
+        <tr><td>➕ Приход & 📥 накладные</td><td>—</td><td>✅</td></tr>
+        <tr><td>📋 Инвентаризация & 🗑 списание</td><td>—</td><td>✅</td></tr>
+        <tr><td>📊 Отчёты & 📜 история</td><td>—</td><td>✅</td></tr>
+        <tr><td>👥 Пользователи & роли</td><td>—</td><td>✅</td></tr>
+       </table>`),
+    L("<b>Start ve 3 krocích:</b> ① otevři <b>@wmsdent_bot</b> a pošli /start · ② admin provede inventuru (zavede stavy) · ③ personál začne vydávat. Faktury pak posílej na <b>faktury@tkalych.cz</b>.",
+      "<b>Start in 3 steps:</b> ① open <b>@wmsdent_bot</b> and send /start · ② the admin runs a stocktake (opening balances) · ③ the staff starts dispensing. Then route invoices to <b>faktury@tkalych.cz</b>.",
+      "<b>Старт в 3 шага:</b> ① открой <b>@wmsdent_bot</b> и отправь /start · ② админ проводит инвентаризацию (заводит остатки) · ③ персонал начинает списывать. Накладные шли на <b>faktury@tkalych.cz</b>."));
+
+  return {F, CH};
+}
+
+/* ================================================================
+                              ENGINE
+   ================================================================ */
+let FRAMES = [], CHAPTERS = [], cur = 0, auto = null;
+
+function renderAll() {
+  const {F, CH} = buildFrames();
+  FRAMES = F; CHAPTERS = CH;
+  document.documentElement.lang = LANG;
+  $("#brandT").textContent = L("🦷 Doktor Tkalych · skladový bot","🦷 Doktor Tkalych · inventory bot","🦷 Doktor Tkalych · складской бот");
+  document.title = L("🦷 Doktor Tkalych — skladový bot · prezentace","🦷 Doktor Tkalych — inventory bot · presentation","🦷 Doktor Tkalych — складской бот · презентация");
+  const chN = $("#chapters"); chN.innerHTML = "";
+  CH.forEach((name, i) => {
+    const first = F.findIndex(f => f.ch === i);
+    if (first < 0) return;
+    const b = document.createElement("button");
+    b.className = "chp"; b.dataset.ch = i;
+    b.textContent = `${i+1}. ${name}`;
+    b.onclick = () => show(first);
+    chN.appendChild(b);
+  });
+  const deck = $("#deck"); deck.innerHTML = "";
+  F.forEach((f, i) => {
+    const stepInCh = F.slice(0, i).filter(x => x.ch === f.ch).length + 1;
+    const chTotal = F.filter(x => x.ch === f.ch).length;
+    const sec = document.createElement("section");
+    sec.className = "slide"; sec.dataset.i = i;
+    sec.innerHTML = f.phoneHtml + `<aside class="an">
+        <div class="crumb">${L("Kapitola","Chapter","Глава")} ${f.ch+1} · ${CH[f.ch]} · ${L("krok","step","шаг")} ${stepInCh}/${chTotal}</div>
+        <h2>${f.title}</h2>
+        <div class="body">${f.bodyHtml}</div>
+        ${f.tip ? `<div class="tip">💡 ${f.tip}</div>` : ""}
+      </aside>`;
+    deck.appendChild(sec);
+  });
+  $("#keysHint").textContent = L("listuj ← →","← → keys","листай ← →");
+  $("#langCs").classList.toggle("on", LANG==="cs");
+  $("#langRu").classList.toggle("on", LANG==="ru");
+  $("#langEn").classList.toggle("on", LANG==="en");
+  show(Math.min(cur, FRAMES.length - 1));
+}
+
+function show(i) {
+  cur = Math.max(0, Math.min(i, FRAMES.length - 1));
+  document.querySelectorAll(".slide").forEach((s, k) => {
+    s.classList.toggle("on", k === cur);
+    if (k === cur) s.scrollTop = 0;
+  });
+  document.querySelectorAll(".chp").forEach(b => {
+    const on = +b.dataset.ch === FRAMES[cur].ch;
+    b.classList.toggle("on", on);
+    if (on && b.scrollIntoView) b.scrollIntoView({block:"nearest", inline:"nearest"});
+  });
+  $("#counter").textContent = `${cur+1} / ${FRAMES.length}`;
+  $("#progFill").style.width = ((cur+1) / FRAMES.length * 100) + "%";
+  try { history.replaceState(null, "", `?lang=${LANG}#${cur+1}`); } catch (e) {}
+}
+function setLang(l) { if (LANG !== l) { LANG = l; renderAll(); } }
+
+$("#prev").onclick = () => show(cur - 1);
+$("#next").onclick = () => show(cur + 1);
+$("#printBtn").onclick = () => window.print();
+$("#langCs").onclick = () => setLang("cs");
+$("#langRu").onclick = () => setLang("ru");
+$("#langEn").onclick = () => setLang("en");
+$("#autoBtn").onclick = () => {
+  if (auto) { clearInterval(auto); auto = null; $("#autoBtn").classList.remove("on"); }
+  else { auto = setInterval(() => show(cur + 1 >= FRAMES.length ? 0 : cur + 1), 7000); $("#autoBtn").classList.add("on"); }
+};
+addEventListener("keydown", e => {
+  if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") { e.preventDefault(); show(cur + 1); }
+  if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(cur - 1); }
+  if (e.key === "Home") show(0);
+  if (e.key === "End") show(FRAMES.length - 1);
+});
+/* swipe navigation (mobile) */
+let swX = 0, swY = 0;
+const deckEl = $("#deck");
+deckEl.addEventListener("touchstart", e => { swX = e.touches[0].clientX; swY = e.touches[0].clientY; }, {passive:true});
+deckEl.addEventListener("touchend", e => {
+  const dx = e.changedTouches[0].clientX - swX, dy = e.changedTouches[0].clientY - swY;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) { dx < 0 ? show(cur + 1) : show(cur - 1); }
+}, {passive:true});
+
+const initHash = parseInt((location.hash || "").slice(1), 10);
+renderAll();
+if (initHash >= 1) show(initHash - 1);
+</script>
+</body>
+</html>
